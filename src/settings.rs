@@ -100,3 +100,12 @@ pub struct Config {
     pub notification: String,
     pub max_grade: usize
 }
+
+#[derive(Debug, Serialize, Deserialize, Default)]
+pub struct Status {
+    pub mount: Option<PathBuf>,
+    pub built: bool,
+    pub graded: bool,
+    pub submitted: bool,
+    pub image: bool
+}

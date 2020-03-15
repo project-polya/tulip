@@ -2,14 +2,15 @@ use std::io::Write;
 use log::*;
 use crate::settings::*;
 mod cli;
-mod init;
+mod register;
 mod settings;
 use structopt::StructOpt;
-use crate::cli::Opt;
+use crate::cli::{Opt, SubCommand};
 use std::path::{Path, PathBuf};
 mod clean_all;
 use rocksdb::DB;
 use std::fmt::{Debug, Display};
+mod pull_image;
 
 fn init_db(path: &Path) -> DB {
     let db = DB::open_default(path).unwrap_or_else(|x| {
@@ -61,27 +62,32 @@ impl<A, B : Debug + Display> LogUnwrap for Result<A, B> {
 }
 fn main() {
     let opt : Opt = Opt::from_args();
-    std::env::set_var("TULIP_LOG_LEVEL", opt.log_level());
+    std::env::set_var("TULIP_LOG_LEVEL", opt.log_level.as_str());
     pretty_env_logger::init_custom_env("TULIP_LOG_LEVEL");
     debug!("tulip invoked with {:#?}", opt);
-    must_sudo();
-    match opt {
-        Opt::Init { tulip_dir, server, token, force, .. } => {
-            create_workdir(tulip_dir.as_path());
-            let db = tulip_dir.join("meta");
-            init::handle(tulip_dir.as_path(), server.as_str(), token.as_str(), &init_db(db.as_path()), force);
+
+    match opt.command {
+        SubCommand::Register { server, token, force } => {
+            create_workdir(opt.tulip_dir.as_path());
+            let db = opt.tulip_dir.join("meta");
+            register::handle(opt.tulip_dir.as_path(), server.as_str(), token.as_str(), &init_db(db.as_path()), force);
         }
-        Opt::CleanAll { tulip_dir, force,.. } => {
-            let db = tulip_dir.join("meta");
-            let res = clean_all::handle_clean(tulip_dir.as_path(), &init_db(db.as_path()));
+        SubCommand::CleanAll { force } => {
+            must_sudo();
+            let db = opt.tulip_dir.join("meta");
+            let res = clean_all::handle_clean(opt.tulip_dir.as_path(), &init_db(db.as_path()));
             if !res && !force {
                 error!("clean up failed");
                 std::process::exit(1);
             }
             else if !res {
                 warn!("clearing failed in the clean way. Fine, let us do it in the dirty way");
-                clean_all::handle_dirty(tulip_dir.as_path());
+                clean_all::handle_dirty(opt.tulip_dir.as_path());
             };
+        }
+        SubCommand::PullImage { force, backend } => {
+            let db = init_db(opt.tulip_dir.join("meta").as_path());
+            pull_image::handle(force, &db, backend.as_str(), opt.tulip_dir.as_path());
         }
     }
 }

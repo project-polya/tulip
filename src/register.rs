@@ -8,6 +8,7 @@ use serde::*;
 use reqwest::header::HeaderValue;
 use crate::LogUnwrap;
 use crate::clean_all::handle_clean;
+use crate::settings::Status;
 
 
 #[repr(transparent)]
@@ -47,4 +48,5 @@ pub fn handle(tulip_dir: &Path, server: &str, token: &str, db: &DB, force: bool)
     db.put("uuid", register.token.as_bytes()).exit_on_failure();
     db.put("server", server).exit_on_failure();
     info!("registered as {}", register.token);
+    db.put("status", serde_json::to_string(&Status::default()).exit_on_failure()).exit_on_failure();
 }
