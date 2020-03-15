@@ -1,6 +1,5 @@
 use serde::*;
 use std::path::PathBuf;
-use crate::cli::Opt;
 
 /// By invoke `setup` the client will first drag the image.
 /// The image contains a `root.x86_64` together with other files.
@@ -100,7 +99,18 @@ pub struct Config {
     pub systemd_nspawn: NSpawnConfig,
     pub firejail: FirejailConfig,
     pub notification: String,
-    pub max_grade: usize
+    pub max_grade: usize,
+    pub capture_stdout: bool,
+    pub capture_stdin: bool,
+    pub stdin: Option<PathBuf>
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct StudentConfig {
+    pub student_id: String,
+    pub build_shell: PathBuf,
+    pub run_shell: PathBuf,
+    pub notification: String
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]
@@ -109,7 +119,9 @@ pub struct Status {
     pub built: bool,
     pub graded: Option<usize>,
     pub comment: String,
-    pub in_progress: bool,
+    pub in_progress: Option<StudentConfig>,
     pub submitted: bool,
-    pub image: bool
+    pub image: bool,
+    pub stdout: Option<String>,
+    pub stderr: Option<String>
 }

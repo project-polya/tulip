@@ -5,7 +5,7 @@ use crate::settings::{Status, Config};
 use reqwest::Url;
 use log::*;
 use std::path::Path;
-
+use serde::*;
 pub fn handle(force: bool, db: &DB, backend: &str, workdir: &Path) {
     let server = force_get(db, "server");
 
@@ -69,12 +69,16 @@ pub fn handle(force: bool, db: &DB, backend: &str, workdir: &Path) {
     refresh_config(server.as_str(), uuid.as_str(), db);
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ConfigResponse {
+    config: Config
+}
 pub fn refresh_config(server: &str, uuid: &str, db: &DB) {
     let config = reqwest::blocking::Client::new()
-        .get(format!("{}/global-config", server).as_str())
+        .get(format!("{}/config", server).as_str())
         .bearer_auth(uuid)
         .send()
-        .and_then(|x|x.json::<Config>())
+        .and_then(|x|x.json::<ConfigResponse>())
         .exit_on_failure();
-    db.put(b"config", serde_json::to_vec(&config).exit_on_failure().as_mut_slice()).exit_on_failure();
+    db.put(b"config", serde_json::to_vec(&config.config).exit_on_failure().as_mut_slice()).exit_on_failure();
 }

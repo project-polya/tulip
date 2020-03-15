@@ -57,6 +57,11 @@ pub enum SubCommand {
         force: bool
     },
     #[structopt(about="delete the current overlay system")]
-    DestroyOverlay
+    DestroyOverlay,
+    #[structopt(about="fetch next student project")]
+    Next {
+        #[structopt(short, long, help="backend downloader", default_value="wget", possible_values=&["wget", "aria2c"])]
+        backend: String
+    }
 
 }

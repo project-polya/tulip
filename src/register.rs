@@ -2,10 +2,8 @@ use std::path::Path;
 use rocksdb::DB;
 use log::*;
 
-use std::io::{Write, Read};
-use reqwest::{Method, Url, Client};
+use reqwest::Url;
 use serde::*;
-use reqwest::header::HeaderValue;
 use crate::LogUnwrap;
 use crate::clean_all::handle_clean;
 use crate::settings::Status;

@@ -1,4 +1,3 @@
-use std::io::Write;
 use log::*;
 use crate::settings::*;
 mod cli;
@@ -6,9 +5,10 @@ mod register;
 mod settings;
 use structopt::StructOpt;
 use crate::cli::{Opt, SubCommand};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 mod clean_all;
 mod overlay;
+mod student;
 use rocksdb::DB;
 use std::fmt::{Debug, Display};
 
@@ -129,7 +129,7 @@ fn main() {
         SubCommand::RefreshConfig => {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
             let server = force_get(&db, "server");
-            let uuid = force_get(&db, "server");
+            let uuid = force_get(&db, "uuid");
             pull_image::refresh_config(server.as_str(), uuid.as_str(), &db);
         }
         SubCommand::InitOverlay { print_result, shell, mount_dir, tmp_size , force} => {
@@ -139,6 +139,10 @@ fn main() {
         SubCommand::DestroyOverlay => {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
             overlay::handle_destroy(&db, opt.tulip_dir.as_path());
+        },
+        SubCommand::Next { backend } => {
+            let db = init_db(opt.tulip_dir.join("meta").as_path());
+            student::handle_next(&db, backend.as_str(), opt.tulip_dir.as_path());
         }
     }
 }
