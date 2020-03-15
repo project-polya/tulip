@@ -11,7 +11,7 @@ mod overlay;
 mod student;
 use rocksdb::DB;
 use std::fmt::{Debug, Display};
-
+mod status;
 mod pull_image;
 fn force_get(db: &DB, key: &str) -> String {
     db.get(key)
@@ -121,14 +121,9 @@ fn main() {
                 pull_image::handle(force, &db, backend.as_str(), opt.tulip_dir.as_path());
             }
         },
-        SubCommand::Status { global } => {
+        SubCommand::Status { command } => {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
-            let status = force_get_json::<Status>(&db, "status");
-            println!("{:#?}", status);
-            if global {
-                let status = force_get_json::<Config>(&db, "config");
-                println!("{:#?}", status);
-            }
+            status::handle(&db, command);
         }
         SubCommand::RefreshConfig => {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
@@ -144,9 +139,29 @@ fn main() {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
             overlay::handle_destroy(&db, opt.tulip_dir.as_path());
         },
-        SubCommand::Next { backend } => {
+        SubCommand::Fetch { backend, download_only } => {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
-            student::handle_next(&db, backend.as_str(), opt.tulip_dir.as_path());
+            student::handle_request(&db, backend.as_str(), opt.tulip_dir.as_path(), download_only);
+        }
+        SubCommand::Grade { score, r#override } => {
+            let db = init_db(opt.tulip_dir.join("meta").as_path());
+            let mut status = force_get_json::<Status>(&db, "status");
+            if status.in_progress.is_none() {
+                error!("no current project");
+                std::process::exit(1);
+            }
+            if status.graded.is_some() && !r#override {
+                error!("grading exists");
+                std::process::exit(1);
+            }
+            let config = force_get_json::<Config>(&db, "config");
+            if config.max_grade < score {
+                error!("score out of range");
+                std::process::exit(1);
+            }
+            status.graded.replace(score);
+            db.put("status", serde_json::to_string(&status)
+                .exit_on_failure()).exit_on_failure();
         }
     }
 }

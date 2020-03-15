@@ -1,6 +1,20 @@
 use structopt::*;
 use std::path::PathBuf;
 #[derive(StructOpt, Debug)]
+pub enum StatusWatch {
+    #[structopt(about="current project status")]
+    Current,
+    #[structopt(about="global configuration")]
+    Global,
+    #[structopt(about="remote student lists")]
+    Remote,
+    #[structopt(about="remote student info")]
+    RemoteID {
+        #[structopt(long, short, about="remote student info")]
+        id : String
+    },
+}
+#[derive(StructOpt, Debug)]
 pub struct Opt {
     #[structopt(short, long, about="the log level", env="TULIP_LOG_LEVEL", default_value="trace",
     possible_values=&["error", "trace", "info", "debug", "off", "warn"])]
@@ -39,8 +53,8 @@ pub enum SubCommand {
     },
     #[structopt(about="see the current status")]
     Status {
-        #[structopt(short, long, help="also check the current global config")]
-        global: bool
+        #[structopt(subcommand)]
+        command: StatusWatch,
     },
     #[structopt(about="refresh the global config")]
     RefreshConfig,
@@ -60,10 +74,19 @@ pub enum SubCommand {
     },
     #[structopt(about="delete the current overlay system")]
     DestroyOverlay,
-    #[structopt(about="fetch next student project")]
-    Next {
+    #[structopt(about="Given a grade to the student")]
+    Grade {
+        #[structopt(short, long, help="the score")]
+        score: usize,
+        #[structopt(long, about="allow override existing score")]
+        r#override: bool
+    },
+    #[structopt(about="fetch student project")]
+    Fetch {
         #[structopt(short, long, help="backend downloader", default_value="wget", possible_values=&["wget", "aria2c"])]
-        backend: String
+        backend: String,
+        #[structopt(short, long, about="do not request next task, only sync current project")]
+        download_only: bool
     }
 
 }
