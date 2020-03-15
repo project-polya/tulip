@@ -8,9 +8,37 @@ use structopt::StructOpt;
 use crate::cli::{Opt, SubCommand};
 use std::path::{Path, PathBuf};
 mod clean_all;
+mod init_overlay;
 use rocksdb::DB;
 use std::fmt::{Debug, Display};
+
 mod pull_image;
+fn force_get(db: &DB, key: &str) -> String {
+    db.get(key)
+        .map_err(|x| x.to_string())
+        .and_then(|x| {
+            match x.map(|x| String::from_utf8_lossy(x.as_slice()).to_string()) {
+                Some(e) => Ok(e),
+                None => Err(format!("unable to get {}", key))
+            }
+        })
+        .exit_on_failure()
+}
+
+fn force_get_json<'a, T : serde::Deserialize<'a>>(db: &DB, key: &str) -> T {
+    static mut BUFFER : Vec<u8> = Vec::new();
+    unsafe {
+        BUFFER.clear();
+        BUFFER.append(&mut db.get(key).exit_on_failure().unwrap_or(vec![]));
+        match simd_json::serde::from_slice::<T>(BUFFER.as_mut_slice()).ok() {
+            Some(res) => res,
+            None => {
+                error!("unable to get {}", key);
+                std::process::exit(1)
+            }
+        }
+    }
+}
 
 fn init_db(path: &Path) -> DB {
     let db = DB::open_default(path).unwrap_or_else(|x| {
@@ -88,6 +116,25 @@ fn main() {
         SubCommand::PullImage { force, backend } => {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
             pull_image::handle(force, &db, backend.as_str(), opt.tulip_dir.as_path());
+        },
+        SubCommand::Status { global } => {
+            let db = init_db(opt.tulip_dir.join("meta").as_path());
+            let status = force_get_json::<Status>(&db, "status");
+            println!("{:#?}", status);
+            if global {
+                let status = force_get_json::<Config>(&db, "config");
+                println!("{:#?}", status);
+            }
+        }
+        SubCommand::RefreshConfig => {
+            let db = init_db(opt.tulip_dir.join("meta").as_path());
+            let server = force_get(&db, "server");
+            let uuid = force_get(&db, "server");
+            pull_image::refresh_config(server.as_str(), uuid.as_str(), &db);
+        }
+        SubCommand::InitOverlay { print_result, shell, mount_dir, tmp_size } => {
+            let db = init_db(opt.tulip_dir.join("meta").as_path());
+            init_overlay::handle(&db, opt.tulip_dir.as_path(), opt.nutshell.as_path(), print_result, shell, mount_dir.as_path(), tmp_size);
         }
     }
 }

@@ -8,7 +8,9 @@ pub struct Opt {
     #[structopt(long, about="the work directory of tulip", env="TULIP_DIR", default_value=".tulip")]
     pub tulip_dir: PathBuf,
     #[structopt(subcommand)]
-    pub command: SubCommand
+    pub command: SubCommand,
+    #[structopt(long, about="path to nutshell binary", env="NUTSHELL_BIN", default_value="nutshell")]
+    pub nutshell: PathBuf,
 }
 #[derive(StructOpt, Debug)]
 pub enum SubCommand {
@@ -32,5 +34,23 @@ pub enum SubCommand {
     CleanAll {
         #[structopt(long, help="force to remove all local data even without successful communication")]
         force: bool
+    },
+    #[structopt(about="see the current status")]
+    Status {
+        #[structopt(short, long, help="also check the current global config")]
+        global: bool
+    },
+    #[structopt(about="refresh the global config")]
+    RefreshConfig,
+    #[structopt(about="initialize the overlay filesystem")]
+    InitOverlay {
+        #[structopt(short, long, help="print a mount result")]
+        print_result: bool,
+        #[structopt(short, long, help="enter a shell of systemd-nspawn after initialization")]
+        shell: bool,
+        #[structopt(short, long, about="the diretory to mount the root", default_value="/mnt")]
+        mount_dir: PathBuf,
+        #[structopt(short, long, about="when specified, a new tmpfs with the given size will mount in the root")]
+        tmp_size: Option<usize>,
     }
 }

@@ -1,48 +1,23 @@
 use rocksdb::DB;
 
-use crate::LogUnwrap;
-use crate::settings::Status;
+use crate::{LogUnwrap, force_get, force_get_json};
+use crate::settings::{Status, Config};
 use reqwest::Url;
 use log::*;
 use std::path::Path;
 
 pub fn handle(force: bool, db: &DB, backend: &str, workdir: &Path) {
-    let server = db.get("server")
-        .map_err(|x| x.to_string())
-        .and_then(|x| {
-            match x.map(|x| String::from_utf8_lossy(x.as_slice()).to_string()) {
-                Some(e) => Ok(e),
-                None => Err(String::from("unable to get server"))
-            }
-        })
-        .exit_on_failure();
+    let server = force_get(db, "server");
 
-    let uuid = db.get("uuid")
-        .map_err(|x| x.to_string())
-        .and_then(|x| {
-            match x.map(|x| String::from_utf8_lossy(x.as_slice()).to_string()) {
-                Some(e) => Ok(e),
-                None => Err(String::from("unable to get uuid"))
-            }
-        })
-        .exit_on_failure();
+    let uuid = force_get(db, "uuid");
 
-    let status = db.get("status")
-        .map_err(|x| x.to_string())
-        .and_then(|x| {
-            let parsed = x.and_then(|mut x| simd_json::serde::from_slice::<Status>(x.as_mut_slice()).ok());
-            match parsed {
-                Some(e) => Ok(e),
-                None => Err(String::from("unable to get status"))
-            }
-        })
-        .exit_on_failure();
+    let mut status = force_get_json::<Status>(db, "status");
 
     if status.image && !force {
         error!("image existed, exiting...");
     }
     let request_url : Url = format!("{}/image.tar", server).parse().exit_on_failure();
-    let auth = format!("'Authorization: Bearer {}'", uuid);
+    let auth = format!("Authorization: Bearer {}", uuid);
     match backend {
         "wget" => {
             std::process::Command::new("wget")
@@ -62,9 +37,11 @@ pub fn handle(force: bool, db: &DB, backend: &str, workdir: &Path) {
         "aria2c" => {
             std::process::Command::new("aria2c")
                 .arg(request_url.as_str())
-                .arg("--optimize-concurrent-downloads ")
+                .arg("--optimize-concurrent-downloads")
+                .arg("--dir")
+                .arg("/tmp")
                 .arg("-o")
-                .arg("/tmp/image.tar")
+                .arg("image.tar")
                 .arg("--header")
                 .arg(auth)
                 .spawn()
@@ -77,13 +54,27 @@ pub fn handle(force: bool, db: &DB, backend: &str, workdir: &Path) {
     }
     std::process::Command::new("sudo")
         .arg("tar")
-        .arg("-xf")
         .arg("-C")
-        .arg(workdir)
+        .arg(std::fs::canonicalize(workdir).exit_on_failure())
+        .arg("-xf")
+        .arg("/tmp/image.tar")
         .spawn()
         .map_err(|x|x.to_string())
         .and_then(|mut x|x.wait().map_err(|x|x.to_string()))
         .and_then(|x| if x.success() {Ok(())} else {Err(String::from("untar failed"))})
         .exit_on_failure();
+    std::fs::remove_file("/tmp/image.tar").exit_on_failure();
+    status.image = true;
     db.put(b"status", serde_json::to_vec(&status).exit_on_failure().as_mut_slice()).exit_on_failure();
+    refresh_config(server.as_str(), uuid.as_str(), db);
+}
+
+pub fn refresh_config(server: &str, uuid: &str, db: &DB) {
+    let config = reqwest::blocking::Client::new()
+        .get(format!("{}/global-config", server).as_str())
+        .bearer_auth(uuid)
+        .send()
+        .and_then(|x|x.json::<Config>())
+        .exit_on_failure();
+    db.put(b"config", serde_json::to_vec(&config).exit_on_failure().as_mut_slice()).exit_on_failure();
 }

@@ -1,5 +1,7 @@
 use serde::*;
 use std::path::PathBuf;
+use crate::cli::Opt;
+
 /// By invoke `setup` the client will first drag the image.
 /// The image contains a `root.x86_64` together with other files.
 /// ```
@@ -105,7 +107,9 @@ pub struct Config {
 pub struct Status {
     pub mount: Option<PathBuf>,
     pub built: bool,
-    pub graded: bool,
+    pub graded: Option<usize>,
+    pub comment: String,
+    pub in_progress: bool,
     pub submitted: bool,
     pub image: bool
 }
