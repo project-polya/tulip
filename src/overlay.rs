@@ -12,7 +12,7 @@ pub fn handle(db: &DB, workdir: &Path, nutshell: &Path, print_result: bool, shel
         error!("please pull down a base image first");
         std::process::exit(1);
     }
-    if!status.in_progress.is_none() {
+    if status.in_progress.is_none() {
         error!("please fetch a student project first");
         std::process::exit(1);
     }

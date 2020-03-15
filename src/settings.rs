@@ -123,5 +123,7 @@ pub struct Status {
     pub submitted: bool,
     pub image: bool,
     pub stdout: Option<String>,
-    pub stderr: Option<String>
+    pub stderr: Option<String>,
+    pub build_stdout: Option<String>,
+    pub build_stderr: Option<String>
 }

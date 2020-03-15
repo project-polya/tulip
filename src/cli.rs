@@ -74,12 +74,17 @@ pub enum SubCommand {
     },
     #[structopt(about="delete the current overlay system")]
     DestroyOverlay,
-    #[structopt(about="Given a grade to the student")]
+    #[structopt(about="Give a grade to the student")]
     Grade {
         #[structopt(short, long, help="the score")]
         score: usize,
         #[structopt(long, about="allow override existing score")]
         r#override: bool
+    },
+    #[structopt(about="Open the comment editor")]
+    Comment {
+        #[structopt(short, long, env="EDITOR", help="the editor software", default_value="nano")]
+        editor: String
     },
     #[structopt(about="fetch student project")]
     Fetch {
@@ -87,6 +92,11 @@ pub enum SubCommand {
         backend: String,
         #[structopt(short, long, about="do not request next task, only sync current project")]
         download_only: bool
+    },
+    #[structopt(about="build the current project")]
+    Build {
+        #[structopt(long, about="rebuild the project")]
+        rebuild: bool
     }
 
 }

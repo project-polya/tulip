@@ -11,8 +11,11 @@ mod overlay;
 mod student;
 use rocksdb::DB;
 use std::fmt::{Debug, Display};
+use std::io::{Read, Write, Seek, SeekFrom};
+
 mod status;
 mod pull_image;
+mod build;
 fn force_get(db: &DB, key: &str) -> String {
     db.get(key)
         .map_err(|x| x.to_string())
@@ -163,5 +166,34 @@ fn main() {
             db.put("status", serde_json::to_string(&status)
                 .exit_on_failure()).exit_on_failure();
         }
+        SubCommand::Comment {editor} => {
+            let db = init_db(opt.tulip_dir.join("meta").as_path());
+            let mut status = force_get_json::<Status>(&db, "status");
+            if status.in_progress.is_none() {
+                error!("no current project");
+                std::process::exit(1);
+            }
+            let mut file = tempfile::NamedTempFile::new()
+                .exit_on_failure();
+            file.write_all(status.comment.as_bytes()).exit_on_failure();
+            file.flush().exit_on_failure();
+            std::process::Command::new(editor)
+                .arg(file.path())
+                .spawn()
+                .exit_on_failure()
+                .wait()
+                .map_err(|x|x.to_string())
+                .and_then(|x| if x.success() {Ok(())} else {Err(format!("editor exit with error: {}", x))})
+                .exit_on_failure();
+            status.comment.clear();
+            file.reopen().exit_on_failure().read_to_string(&mut status.comment).exit_on_failure();
+            db.put("status", serde_json::to_string(&status)
+                .exit_on_failure()).exit_on_failure();
+        }
+        SubCommand::Build {rebuild} => {
+            let db = init_db(opt.tulip_dir.join("meta").as_path());
+            build::handle(&db, rebuild, opt.tulip_dir.as_path());
+        }
     }
+
 }
