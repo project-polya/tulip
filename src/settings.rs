@@ -101,7 +101,7 @@ pub struct Config {
     pub notification: String,
     pub max_grade: usize,
     pub capture_stdout: bool,
-    pub capture_stdin: bool,
+    pub capture_stderr: bool,
     pub stdin: Option<PathBuf>
 }
 

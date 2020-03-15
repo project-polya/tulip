@@ -33,7 +33,7 @@ pub fn handle_next(db: &DB, backend: &str, workdir: &Path) {
         .get(format!("{}/next", server).parse::<Url>().exit_on_failure())
         .bearer_auth(uuid.as_str())
         .send()
-        .and_then(|x|x.json::<StudentConfigResponce>()).exit_on_failure();
+        .and_then(|x|x.json::<StudentConfigResponse>()).exit_on_failure();
     if let Some(f) = new_student.failure {
         error!("failed to get next student: {}", f);
         std::process::exit(1);

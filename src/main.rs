@@ -113,9 +113,13 @@ fn main() {
                 clean_all::handle_dirty(opt.tulip_dir.as_path());
             };
         }
-        SubCommand::PullImage { force, backend } => {
+        SubCommand::PullImage { force, backend, local_set } => {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
-            pull_image::handle(force, &db, backend.as_str(), opt.tulip_dir.as_path());
+            if local_set {
+                pull_image::handle_local(&db, opt.tulip_dir.as_path());
+            } else {
+                pull_image::handle(force, &db, backend.as_str(), opt.tulip_dir.as_path());
+            }
         },
         SubCommand::Status { global } => {
             let db = init_db(opt.tulip_dir.join("meta").as_path());

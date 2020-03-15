@@ -28,7 +28,9 @@ pub enum SubCommand {
         #[structopt(long, help="force to renew the current image")]
         force: bool,
         #[structopt(short, long, help="backend downloader", default_value="wget", possible_values=&["wget", "aria2c"])]
-        backend: String
+        backend: String,
+        #[structopt(long, help="Use this if you have already untar an image on your own")]
+        local_set: bool
     },
     #[structopt(about="unregister the client and clean up local environment")]
     CleanAll {
