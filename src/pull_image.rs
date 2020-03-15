@@ -85,5 +85,5 @@ pub fn handle(force: bool, db: &DB, backend: &str, workdir: &Path) {
         .and_then(|mut x|x.wait().map_err(|x|x.to_string()))
         .and_then(|x| if x.success() {Ok(())} else {Err(String::from("untar failed"))})
         .exit_on_failure();
-
+    db.put(b"status", serde_json::to_vec(&status).exit_on_failure().as_mut_slice()).exit_on_failure();
 }
