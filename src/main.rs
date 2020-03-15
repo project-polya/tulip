@@ -8,7 +8,7 @@ use structopt::StructOpt;
 use crate::cli::{Opt, SubCommand};
 use std::path::{Path, PathBuf};
 mod clean_all;
-mod init_overlay;
+mod overlay;
 use rocksdb::DB;
 use std::fmt::{Debug, Display};
 
@@ -132,9 +132,13 @@ fn main() {
             let uuid = force_get(&db, "server");
             pull_image::refresh_config(server.as_str(), uuid.as_str(), &db);
         }
-        SubCommand::InitOverlay { print_result, shell, mount_dir, tmp_size } => {
+        SubCommand::InitOverlay { print_result, shell, mount_dir, tmp_size , force} => {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
-            init_overlay::handle(&db, opt.tulip_dir.as_path(), opt.nutshell.as_path(), print_result, shell, mount_dir.as_path(), tmp_size);
+            overlay::handle(&db, opt.tulip_dir.as_path(), opt.nutshell.as_path(), print_result, shell, mount_dir.as_path(), tmp_size, force);
+        }
+        SubCommand::DestroyOverlay => {
+            let db = init_db(opt.tulip_dir.join("meta").as_path());
+            overlay::handle_destroy(&db, opt.tulip_dir.as_path());
         }
     }
 }

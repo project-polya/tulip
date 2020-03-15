@@ -42,6 +42,7 @@ pub enum SubCommand {
     },
     #[structopt(about="refresh the global config")]
     RefreshConfig,
+
     #[structopt(about="initialize the overlay filesystem")]
     InitOverlay {
         #[structopt(short, long, help="print a mount result")]
@@ -52,5 +53,10 @@ pub enum SubCommand {
         mount_dir: PathBuf,
         #[structopt(short, long, about="when specified, a new tmpfs with the given size will mount in the root")]
         tmp_size: Option<usize>,
-    }
+        #[structopt(long, help="force to mount overlay even if there is a record in the database. this can be useful if you want to recover the progress after reboot")]
+        force: bool
+    },
+    #[structopt(about="delete the current overlay system")]
+    DestroyOverlay
+
 }
