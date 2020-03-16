@@ -28,7 +28,9 @@ pub fn handle(db: &DB, workdir: &Path, nutshell: &Path, print_result: bool, shel
     info!("starting nutshell process");
 
     let mut command = std::process::Command::new("sudo");
-    command.arg("-E")
+    command
+        .arg("-k")
+        .arg("-E")
         .arg(nutshell)
         .arg("init-overlay")
         .arg("-m")
@@ -59,7 +61,7 @@ pub fn handle_destroy(db: &DB, workdir: &Path) {
     let mut status = force_get_json::<Status>(db, "status");
     if let Some(mount) = &status.mount {
         info!("trying to umount {}", mount.display());
-        let umount = std::process::Command::new("sudo")
+        let umount = std::process::Command::new("sudo").arg("-k")
             .arg("umount")
             .arg("-R")
             .arg(mount)
@@ -72,7 +74,7 @@ pub fn handle_destroy(db: &DB, workdir: &Path) {
     }
     let deleting_path = workdir.join("data");
     warn!("deleting {}", deleting_path.display());
-    let deleting = std::process::Command::new("sudo")
+    let deleting = std::process::Command::new("sudo").arg("-k")
         .arg("rm")
         .arg("-rf")
         .arg(deleting_path)

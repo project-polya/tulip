@@ -72,10 +72,13 @@ pub fn handle(force: bool, db: &DB, backend: &str, workdir: &Path) {
         }
         _ => unreachable!()
     }
+    let untar_path = std::fs::canonicalize(workdir).exit_on_failure();
+    info!("untar image to {}", untar_path.display());
     std::process::Command::new("sudo")
+        .arg("-k")
         .arg("tar")
         .arg("-C")
-        .arg(std::fs::canonicalize(workdir).exit_on_failure())
+        .arg(untar_path)
         .arg("-xf")
         .arg("/tmp/image.tar")
         .spawn()
@@ -100,5 +103,8 @@ pub fn refresh_config(server: &str, uuid: &str, db: &DB) {
         .send()
         .and_then(|x| x.json::<ConfigResponse>())
         .exit_on_failure();
+    if !config.config.notification.is_empty() {
+        info!("server notification:\n{}", config.config.notification);
+    }
     db.put(b"config", serde_json::to_vec(&config.config).exit_on_failure().as_mut_slice()).exit_on_failure();
 }

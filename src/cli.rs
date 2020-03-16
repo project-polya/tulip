@@ -96,10 +96,18 @@ pub enum SubCommand {
         backend: String,
         #[structopt(short, long, about = "do not request next task, only sync current project")]
         download_only: bool,
+        #[structopt(short, long, help = "shellcheck path", env="SHELL_CHECK_BIN", default_value="shellcheck")]
+        shellcheck : PathBuf
     },
     #[structopt(about = "build the current project")]
     Build {
         #[structopt(long, about = "rebuild the project")]
         rebuild: bool
     },
+
+    #[structopt(about = "build the current project")]
+    Run {
+        #[structopt(long, about = "force to run without build")]
+        without_build: bool
+    }
 }

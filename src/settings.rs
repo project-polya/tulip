@@ -62,6 +62,7 @@ pub struct NSpawnConfig {
     pub extra_overlay: Vec<Binding>,
     // relative path based on `.local/tulip/image`
     pub extra_overlay_ro: Vec<Binding>, // relative path based on `.local/tulip/image`
+    pub shell: Option<PathBuf>
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -94,6 +95,7 @@ pub struct FirejailConfig {
     pub nice: Option<usize>,
     pub function: FuntionList,
     pub mac: Option<String>,
+    pub dns: Option<Vec<String>>,
     pub nodefault: bool,
     pub limit: Option<Limit>,
     pub capacity: Vec<String>,

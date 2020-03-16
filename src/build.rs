@@ -39,6 +39,7 @@ pub fn handle(db: &DB, rebuild: bool, workdir: &Path) {
 
     info!("copy student {} to {}", data.display(), target.display());
     std::process::Command::new("sudo")
+        .arg("-k")
         .arg("rsync")
         .arg("-r")
         .arg(format!("{}/", data.display()))
@@ -52,7 +53,7 @@ pub fn handle(db: &DB, rebuild: bool, workdir: &Path) {
 
     let mut builder = std::process::Command::new("sudo");
 
-    builder.arg("systemd-nspawn");
+    builder.arg("-k").arg("systemd-nspawn");
     if config.systemd_nspawn.no_network {
         builder.arg("--private-network");
     } else {
@@ -130,10 +131,13 @@ pub fn handle(db: &DB, rebuild: bool, workdir: &Path) {
         }
     }
 
+    let shell = config.systemd_nspawn.shell
+        .as_ref().map(|x|x.as_path()).unwrap_or("/bin/sh".as_ref());
+
     let mut child = builder.arg("--quiet")
         .arg("-D")
         .arg(mount_point)
-        .arg("/usr/bin/bash")
+        .arg(shell)
         .arg(format!("/data/{}", student.build_shell.display()))
         .stderr(Stdio::piped())
         .stdout(Stdio::piped())

@@ -18,7 +18,7 @@ mod student;
 mod status;
 mod pull_image;
 mod build;
-
+mod run;
 fn force_get(db: &DB, key: &str) -> String {
     db.get(key)
         .map_err(|x| x.to_string())
@@ -148,9 +148,9 @@ fn main() {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
             overlay::handle_destroy(&db, opt.tulip_dir.as_path());
         }
-        SubCommand::Fetch { backend, download_only } => {
+        SubCommand::Fetch { backend, download_only , shellcheck} => {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
-            student::handle_request(&db, backend.as_str(), opt.tulip_dir.as_path(), download_only);
+            student::handle_request(&db, backend.as_str(), opt.tulip_dir.as_path(), download_only, shellcheck.as_path());
         }
         SubCommand::Grade { score, r#override } => {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
@@ -199,6 +199,10 @@ fn main() {
         SubCommand::Build { rebuild } => {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
             build::handle(&db, rebuild, opt.tulip_dir.as_path());
+        }
+        SubCommand::Run { without_build } => {
+            let db = init_db(opt.tulip_dir.join("meta").as_path());
+            run::run(&db, opt.tulip_dir.as_path(), without_build);
         }
     }
 }
