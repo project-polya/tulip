@@ -1,15 +1,15 @@
+use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
+use std::process::Stdio;
+use std::sync::atomic::AtomicPtr;
+use std::sync::atomic::Ordering::Relaxed;
+use std::thread;
 
 use log::*;
 use rocksdb::DB;
 
 use crate::{force_get_json, LogUnwrap};
 use crate::settings::{Config, Status};
-use std::process::Stdio;
-use std::io::{Write, BufReader, BufRead};
-use std::sync::atomic::AtomicPtr;
-use std::thread;
-use std::sync::atomic::Ordering::Relaxed;
 
 pub fn extra_bind(source: &Path, target: &Path, ro: bool) {
     info!("binding {} to {}", source.display(), target.display());
@@ -29,7 +29,7 @@ pub fn extra_bind(source: &Path, target: &Path, ro: bool) {
 pub fn umount(target: &Path) {
     info!("umounting {}", target.display());
     let mut command = std::process::Command::new("sudo");
-    if let Err(e) = command.arg("umount")
+    if let Err(e) = command.arg("-k").arg("umount")
         .arg("-R")
         .arg(target)
         .spawn()

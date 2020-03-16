@@ -92,8 +92,14 @@ pub fn handle_dirty(workdir: &Path) {
             error!("failed to remove data dir: {}", e);
         }
     }
-    match std::fs::remove_dir_all(workdir.join("root.x86_64")) {
+    match std::fs::remove_dir_all(workdir.join("image")) {
         Ok(_) => { info!("image dir removed"); }
+        Err(e) => {
+            error!("failed to remove image dir: {}", e);
+        }
+    }
+    match std::fs::remove_dir_all(workdir.join("student")) {
+        Ok(_) => { info!("student dir removed"); }
         Err(e) => {
             error!("failed to remove image dir: {}", e);
         }

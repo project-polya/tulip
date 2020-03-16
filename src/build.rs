@@ -50,7 +50,7 @@ pub fn handle(db: &DB, rebuild: bool, workdir: &Path) {
         .map_err(|x| x.to_string())
         .and_then(|x| if x.success() { Ok(()) } else { Err(format!("failed with {}", x)) })
         .exit_on_failure();
-
+    info!("starting systemd-nspawn");
     let mut builder = std::process::Command::new("sudo");
 
     builder.arg("-k").arg("systemd-nspawn");
@@ -132,7 +132,7 @@ pub fn handle(db: &DB, rebuild: bool, workdir: &Path) {
     }
 
     let shell = config.systemd_nspawn.shell
-        .as_ref().map(|x|x.as_path()).unwrap_or("/bin/sh".as_ref());
+        .as_ref().map(|x| x.as_path()).unwrap_or("/bin/sh".as_ref());
 
     let mut child = builder.arg("--quiet")
         .arg("-D")

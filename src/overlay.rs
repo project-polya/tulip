@@ -38,7 +38,7 @@ pub fn handle(db: &DB, workdir: &Path, nutshell: &Path, print_result: bool, shel
         .arg("-d")
         .arg(workdir.join("data").canonicalize().exit_on_failure())
         .arg("-b")
-        .arg(workdir.join("root.x86_64").canonicalize().exit_on_failure());
+        .arg(workdir.join("image/root.x86_64").canonicalize().exit_on_failure());
     if let Some(size) = tmp_size {
         command.arg("-t").arg(format!("{}m", size));
     }

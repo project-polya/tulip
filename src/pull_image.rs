@@ -10,7 +10,7 @@ use crate::settings::{Config, Status};
 
 pub fn handle_local(db: &DB, workdir: &Path) {
     let mut status = force_get_json::<Status>(db, "status");
-    if let Ok(meta) = std::fs::metadata(workdir.join("root.x86_64")) {
+    if let Ok(meta) = std::fs::metadata(workdir.join("image/root.x86_64")) {
         if meta.is_dir() {
             info!("target image detected");
             status.image = true;
@@ -72,7 +72,8 @@ pub fn handle(force: bool, db: &DB, backend: &str, workdir: &Path) {
         }
         _ => unreachable!()
     }
-    let untar_path = std::fs::canonicalize(workdir).exit_on_failure();
+    std::fs::create_dir_all(workdir.join("image")).exit_on_failure();
+    let untar_path = std::fs::canonicalize(workdir.join("image")).exit_on_failure();
     info!("untar image to {}", untar_path.display());
     std::process::Command::new("sudo")
         .arg("-k")
