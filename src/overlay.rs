@@ -55,7 +55,7 @@ pub fn handle(db: &DB, workdir: &Path, nutshell: &Path, print_result: bool, shel
     db.put("status", serde_json::to_string(&status).exit_on_failure()).exit_on_failure();
 }
 
-pub fn handle_destroy(db: &DB, workdir: &Path){
+pub fn handle_destroy(db: &DB, workdir: &Path) {
     let mut status = force_get_json::<Status>(db, "status");
     if let Some(mount) = &status.mount {
         info!("trying to umount {}", mount.display());
@@ -77,9 +77,9 @@ pub fn handle_destroy(db: &DB, workdir: &Path){
         .arg("-rf")
         .arg(deleting_path)
         .spawn()
-        .and_then(|mut x|x.wait());
+        .and_then(|mut x| x.wait());
     match deleting {
-        Ok(e ) => info!("deleting exit with {}", e),
+        Ok(e) => info!("deleting exit with {}", e),
         Err(e) => error!("deleting failed with {}", e)
     }
     status.built = false;

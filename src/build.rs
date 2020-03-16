@@ -1,14 +1,16 @@
-use rocksdb::DB;
-use crate::{force_get_json, LogUnwrap};
-use crate::settings::{Status, Config};
-use std::path::Path;
-use log::*;
-use std::process::Stdio;
-use std::io::{BufReader, BufRead};
-use std::thread;
+use std::io::{BufRead, BufReader};
 use std::io::Write;
+use std::path::Path;
+use std::process::Stdio;
 use std::sync::atomic::AtomicPtr;
 use std::sync::atomic::Ordering::Relaxed;
+use std::thread;
+
+use log::*;
+use rocksdb::DB;
+
+use crate::{force_get_json, LogUnwrap};
+use crate::settings::{Config, Status};
 
 pub fn handle(db: &DB, rebuild: bool, workdir: &Path) {
     let mut status = force_get_json::<Status>(db, "status");
@@ -44,8 +46,8 @@ pub fn handle(db: &DB, rebuild: bool, workdir: &Path) {
         .spawn()
         .exit_on_failure()
         .wait()
-        .map_err(|x|x.to_string())
-        .and_then(|x| if x.success() { Ok (())} else {Err(format!("failed with {}", x))})
+        .map_err(|x| x.to_string())
+        .and_then(|x| if x.success() { Ok(()) } else { Err(format!("failed with {}", x)) })
         .exit_on_failure();
 
     let mut builder = std::process::Command::new("sudo");
@@ -62,10 +64,10 @@ pub fn handle(db: &DB, rebuild: bool, workdir: &Path) {
     if config.systemd_nspawn.no_new_privileges {
         builder.arg("--no-new-privileges");
     }
-    if let Some(limit) =  &config.systemd_nspawn.limit{
+    if let Some(limit) = &config.systemd_nspawn.limit {
         if let Some(cpu) = limit.cpu_nums {
             builder.arg(format!("--cpu-affinity={}",
-                                (0..cpu).map(|x|x.to_string()).collect::<Vec<_>>().join(",")));
+                                (0..cpu).map(|x| x.to_string()).collect::<Vec<_>>().join(",")));
         }
         if let Some(filesize) = limit.filesize_limit {
             builder.arg(format!("--rlimit=FSIZE={}", filesize));
@@ -140,8 +142,8 @@ pub fn handle(db: &DB, rebuild: bool, workdir: &Path) {
 
     let out = BufReader::new(child.stdout.take().unwrap());
     let err = BufReader::new(child.stderr.take().unwrap());
-    let mut out_captured : Vec<u8> = Vec::new();
-    let mut err_captured : Vec<u8> = Vec::new();
+    let mut out_captured: Vec<u8> = Vec::new();
+    let mut err_captured: Vec<u8> = Vec::new();
     let err_pointer = AtomicPtr::new(&mut err_captured as *mut Vec<u8>);
     let thread = thread::spawn(move || err.lines()
         .for_each(|line| unsafe {
@@ -164,8 +166,8 @@ pub fn handle(db: &DB, rebuild: bool, workdir: &Path) {
     };
 
     child.wait()
-        .map_err(|x|x.to_string())
-        .and_then(|x|if x.success() { Ok(()) } else {Err(format!("container exit with: {}", x))})
+        .map_err(|x| x.to_string())
+        .and_then(|x| if x.success() { Ok(()) } else { Err(format!("container exit with: {}", x)) })
         .exit_on_failure();
 
     status.built = true;

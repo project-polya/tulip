@@ -1,15 +1,17 @@
-use rocksdb::DB;
-use crate::{force_get_json, force_get, LogUnwrap};
-use crate::settings::{Status, StudentConfig};
 use std::path::{Path, PathBuf};
+
 use log::*;
 use reqwest::Url;
+use rocksdb::DB;
 use serde::*;
+
+use crate::{force_get, force_get_json, LogUnwrap};
+use crate::settings::{Status, StudentConfig};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct StudentConfigResponse {
     student: Option<StudentConfig>,
-    failure: Option<String>
+    failure: Option<String>,
 }
 
 pub fn handle_request(db: &DB, backend: &str, workdir: &Path, download_only: bool) {
@@ -74,10 +76,10 @@ pub fn handle_request(db: &DB, backend: &str, workdir: &Path, download_only: boo
                 .spawn()
                 .exit_on_failure()
                 .wait()
-                .map_err(|x|x.to_string())
-                .and_then(|x| if x.success() {Ok(())} else {Err(format!("wget failed with: {}", x))})
+                .map_err(|x| x.to_string())
+                .and_then(|x| if x.success() { Ok(()) } else { Err(format!("wget failed with: {}", x)) })
                 .exit_on_failure();
-        },
+        }
         "aria2c" => {
             std::process::Command::new("aria2c")
                 .arg("--optimize-concurrent-downloads")
@@ -92,8 +94,8 @@ pub fn handle_request(db: &DB, backend: &str, workdir: &Path, download_only: boo
                 .spawn()
                 .exit_on_failure()
                 .wait()
-                .map_err(|x|x.to_string())
-                .and_then(|x| if x.success() {Ok(())} else {Err(format!("aria2c failed with: {}", x))})
+                .map_err(|x| x.to_string())
+                .and_then(|x| if x.success() { Ok(()) } else { Err(format!("aria2c failed with: {}", x)) })
                 .exit_on_failure();
         }
         _ => unreachable!()
@@ -109,8 +111,8 @@ pub fn handle_request(db: &DB, backend: &str, workdir: &Path, download_only: boo
         .spawn()
         .exit_on_failure()
         .wait()
-        .map_err(|x|x.to_string())
-        .and_then(|x| if x.success() {Ok(())} else {Err(format!("aria2c failed with: {}", x))})
+        .map_err(|x| x.to_string())
+        .and_then(|x| if x.success() { Ok(()) } else { Err(format!("aria2c failed with: {}", x)) })
         .exit_on_failure();
     info!("student information synced");
 }

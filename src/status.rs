@@ -1,15 +1,16 @@
-use rocksdb::DB;
-use crate::cli::StatusWatch;
-use crate::{force_get_json, force_get, LogUnwrap};
-use crate::settings::{Config, Status, StudentConfig};
-
-use serde::*;
 use reqwest::Url;
+use rocksdb::DB;
+use serde::*;
+
+use crate::{force_get, force_get_json, LogUnwrap};
+use crate::cli::StatusWatch;
+use crate::settings::{Config, Status, StudentConfig};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct StudentList {
     students: Vec<String>
 }
+
 pub fn handle(db: &DB, command: StatusWatch) {
     match command {
         StatusWatch::Global => {
@@ -31,8 +32,8 @@ pub fn handle(db: &DB, command: StatusWatch) {
                 .json::<StudentList>()
                 .exit_on_failure();
             println!("{:#?}", ans);
-        },
-        StatusWatch::RemoteID { id} => {
+        }
+        StatusWatch::RemoteID { id } => {
             let server = force_get(db, "server");
             let uuid = force_get(db, "uuid");
             let ans = reqwest::blocking::Client::new()

@@ -1,13 +1,13 @@
 use std::path::Path;
-use rocksdb::DB;
+
 use log::*;
-
 use reqwest::Url;
+use rocksdb::DB;
 use serde::*;
-use crate::LogUnwrap;
-use crate::clean_all::handle_clean;
-use crate::settings::Status;
 
+use crate::clean_all::handle_clean;
+use crate::LogUnwrap;
+use crate::settings::Status;
 
 #[repr(transparent)]
 #[derive(Debug, Serialize, Deserialize)]
@@ -30,7 +30,7 @@ pub fn handle(tulip_dir: &Path, server: &str, token: &str, db: &DB, force: bool)
         }
     }
     let mut seed = [0u8; 16];
-    botan::RandomNumberGenerator::new().and_then(|x|x.fill(&mut seed))
+    botan::RandomNumberGenerator::new().and_then(|x| x.fill(&mut seed))
         .unwrap_or_else(|e| {
             error!("{:?}", e);
             std::process::exit(1)
@@ -41,7 +41,7 @@ pub fn handle(tulip_dir: &Path, server: &str, token: &str, db: &DB, force: bool)
         .get(format!("{}/register", server).parse::<Url>().exit_on_failure())
         .bearer_auth(hash)
         .send()
-        .and_then(|res|res.json::<RegisterResult>())
+        .and_then(|res| res.json::<RegisterResult>())
         .exit_on_failure();
     db.put("uuid", register.token.as_bytes()).exit_on_failure();
     db.put("server", server).exit_on_failure();

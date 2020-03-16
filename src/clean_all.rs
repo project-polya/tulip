@@ -23,7 +23,7 @@ pub fn handle_clean(workdir: &Path, db: &DB) -> bool {
             .spawn()
             .map_err(|x| x.to_string())
             .and_then(|mut x| x.wait()
-                .map_err(|x|x.to_string())
+                .map_err(|x| x.to_string())
                 .and_then(|x| {
                     if x.success() {
                         Ok(())

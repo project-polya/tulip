@@ -1,21 +1,24 @@
+use std::fmt::{Debug, Display};
+use std::io::{Read, Seek, SeekFrom, Write};
+use std::path::Path;
+
 use log::*;
+use rocksdb::DB;
+use structopt::StructOpt;
+
+use crate::cli::{Opt, SubCommand};
 use crate::settings::*;
+
 mod cli;
 mod register;
 mod settings;
-use structopt::StructOpt;
-use crate::cli::{Opt, SubCommand};
-use std::path::Path;
 mod clean_all;
 mod overlay;
 mod student;
-use rocksdb::DB;
-use std::fmt::{Debug, Display};
-use std::io::{Read, Write, Seek, SeekFrom};
-
 mod status;
 mod pull_image;
 mod build;
+
 fn force_get(db: &DB, key: &str) -> String {
     db.get(key)
         .map_err(|x| x.to_string())
@@ -28,8 +31,8 @@ fn force_get(db: &DB, key: &str) -> String {
         .exit_on_failure()
 }
 
-fn force_get_json<'a, T : serde::Deserialize<'a>>(db: &DB, key: &str) -> T {
-    static mut BUFFER : Vec<u8> = Vec::new();
+fn force_get_json<'a, T: serde::Deserialize<'a>>(db: &DB, key: &str) -> T {
+    static mut BUFFER: Vec<u8> = Vec::new();
     unsafe {
         BUFFER.clear();
         BUFFER.append(&mut db.get(key).exit_on_failure().unwrap_or(vec![]));
@@ -62,8 +65,9 @@ fn must_sudo() {
         std::process::exit(1);
     }
 }
+
 fn create_workdir(path: &Path) {
-    if let Ok(true) = std::fs::metadata(path).map(|x|x.is_dir()) {
+    if let Ok(true) = std::fs::metadata(path).map(|x| x.is_dir()) {
         debug!("workdir is already created");
     } else {
         debug!("trying to create workdir");
@@ -74,11 +78,13 @@ fn create_workdir(path: &Path) {
         debug!("workdir created");
     }
 }
+
 trait LogUnwrap {
     type Return;
     fn exit_on_failure(self) -> Self::Return;
 }
-impl<A, B : Debug + Display> LogUnwrap for Result<A, B> {
+
+impl<A, B: Debug + Display> LogUnwrap for Result<A, B> {
     type Return = A;
 
     fn exit_on_failure(self) -> Self::Return {
@@ -91,8 +97,9 @@ impl<A, B : Debug + Display> LogUnwrap for Result<A, B> {
         }
     }
 }
+
 fn main() {
-    let opt : Opt = Opt::from_args();
+    let opt: Opt = Opt::from_args();
     std::env::set_var("TULIP_LOG_LEVEL", opt.log_level.as_str());
     pretty_env_logger::init_custom_env("TULIP_LOG_LEVEL");
     debug!("tulip invoked with {:#?}", opt);
@@ -110,8 +117,7 @@ fn main() {
             if !res && !force {
                 error!("clean up failed");
                 std::process::exit(1);
-            }
-            else if !res {
+            } else if !res {
                 warn!("clearing failed in the clean way. Fine, let us do it in the dirty way");
                 clean_all::handle_dirty(opt.tulip_dir.as_path());
             };
@@ -123,7 +129,7 @@ fn main() {
             } else {
                 pull_image::handle(force, &db, backend.as_str(), opt.tulip_dir.as_path());
             }
-        },
+        }
         SubCommand::Status { command } => {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
             status::handle(&db, command);
@@ -134,14 +140,14 @@ fn main() {
             let uuid = force_get(&db, "uuid");
             pull_image::refresh_config(server.as_str(), uuid.as_str(), &db);
         }
-        SubCommand::InitOverlay { print_result, shell, mount_dir, tmp_size , force} => {
+        SubCommand::InitOverlay { print_result, shell, mount_dir, tmp_size, force } => {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
             overlay::handle(&db, opt.tulip_dir.as_path(), opt.nutshell.as_path(), print_result, shell, mount_dir.as_path(), tmp_size, force);
         }
         SubCommand::DestroyOverlay => {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
             overlay::handle_destroy(&db, opt.tulip_dir.as_path());
-        },
+        }
         SubCommand::Fetch { backend, download_only } => {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
             student::handle_request(&db, backend.as_str(), opt.tulip_dir.as_path(), download_only);
@@ -166,7 +172,7 @@ fn main() {
             db.put("status", serde_json::to_string(&status)
                 .exit_on_failure()).exit_on_failure();
         }
-        SubCommand::Comment {editor} => {
+        SubCommand::Comment { editor } => {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
             let mut status = force_get_json::<Status>(&db, "status");
             if status.in_progress.is_none() {
@@ -182,18 +188,17 @@ fn main() {
                 .spawn()
                 .exit_on_failure()
                 .wait()
-                .map_err(|x|x.to_string())
-                .and_then(|x| if x.success() {Ok(())} else {Err(format!("editor exit with error: {}", x))})
+                .map_err(|x| x.to_string())
+                .and_then(|x| if x.success() { Ok(()) } else { Err(format!("editor exit with error: {}", x)) })
                 .exit_on_failure();
             status.comment.clear();
             file.reopen().exit_on_failure().read_to_string(&mut status.comment).exit_on_failure();
             db.put("status", serde_json::to_string(&status)
                 .exit_on_failure()).exit_on_failure();
         }
-        SubCommand::Build {rebuild} => {
+        SubCommand::Build { rebuild } => {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
             build::handle(&db, rebuild, opt.tulip_dir.as_path());
         }
     }
-
 }
