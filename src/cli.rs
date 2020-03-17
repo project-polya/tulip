@@ -24,7 +24,8 @@ pub enum StatusWatch {
     EditGlobal {
         #[structopt(short, long, env = "EDITOR", help = "the editor software", default_value = "nano")]
         editor: String
-    }
+    },
+
 }
 
 #[derive(StructOpt, Debug)]
@@ -106,8 +107,8 @@ pub enum SubCommand {
         backend: String,
         #[structopt(short, long, about = "do not request next task, only sync current project")]
         download_only: bool,
-        #[structopt(short, long, help = "shellcheck path", env="SHELL_CHECK_BIN", default_value="shellcheck")]
-        shellcheck : PathBuf
+        #[structopt(short, long, help = "shellcheck path", env = "SHELL_CHECK_BIN", default_value = "shellcheck")]
+        shellcheck: PathBuf,
     },
     #[structopt(about = "build the current project")]
     Build {
@@ -119,5 +120,11 @@ pub enum SubCommand {
     Run {
         #[structopt(long, about = "force to run without build")]
         without_build: bool
-    }
+    },
+
+    #[structopt(about = "edit current global settings")]
+    Submit {
+        #[structopt(long, about = "allow overriding existing submission")]
+        r#override: bool
+    },
 }

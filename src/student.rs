@@ -1,7 +1,8 @@
+use std::io::{stdout, Write};
 use std::path::Path;
 
 use log::*;
-use reqwest::Url;
+use reqwest::{blocking, Url};
 use rocksdb::DB;
 use serde::*;
 
@@ -23,12 +24,20 @@ pub fn handle_request(db: &DB, backend: &str, workdir: &Path, download_only: boo
             error!("current project not submitted, exiting");
             std::process::exit(1);
         }
-        status.comment.clear();
-        status.graded = None;
-        status.submitted = false;
-        status.in_progress = None;
-        status.stderr = None;
-        status.stdout = None;
+        status = Status {
+            mount: status.mount,
+            built: false,
+            graded: None,
+            comment: None,
+            in_progress: None,
+            submitted: false,
+            image: false,
+            mark: false,
+            stdout: None,
+            stderr: None,
+            build_stdout: None,
+            build_stderr: None,
+        };
         let mut new_student = reqwest::blocking::Client::new()
             .get(format!("{}/next", server).parse::<Url>().exit_on_failure())
             .bearer_auth(uuid.as_str())
@@ -146,4 +155,42 @@ pub fn handle_request(db: &DB, backend: &str, workdir: &Path, download_only: boo
     if !student.notification.is_empty() {
         info!("student notification:\n{}", student.notification);
     }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct SubmissionResponse {
+    failure: Option<String>
+}
+
+pub fn handle_submit(db: &DB, r#override: bool) {
+    let server = force_get(db, "server");
+    let uuid = force_get(db, "uuid");
+    let mut status = force_get_json::<Status>(db, "status");
+    if status.in_progress.is_none() {
+        println!("no current project");
+        std::process::exit(1);
+    }
+    println!("status: {}", serde_json::to_string_pretty(&status).exit_on_failure());
+    print!("Are you sure to submit? [Y/n] ");
+    stdout().flush().exit_on_failure();
+    let mut buffer = String::new();
+    std::io::stdin().read_line(&mut buffer).exit_on_failure();
+    if "y" != buffer.trim() && "Y" != buffer.trim() { return; }
+    blocking::Client::new()
+        .put(format!("{}/student/{}/grades", server,
+                     status.in_progress.as_ref().unwrap().student_id).parse::<Url>().exit_on_failure())
+        .bearer_auth(uuid)
+        .json(&status.get_submission(r#override))
+        .send()
+        .and_then(|x| x.json::<SubmissionResponse>())
+        .map_err(|x| x.to_string())
+        .and_then(|x| {
+            match x.failure {
+                None => Ok(()),
+                Some(e) => Err(e)
+            }
+        })
+        .exit_on_failure();
+    status.submitted = true;
+    db.put("status", serde_json::to_string(&status).exit_on_failure()).exit_on_failure();
 }

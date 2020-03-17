@@ -181,7 +181,9 @@ fn main() {
             }
             let mut file = tempfile::NamedTempFile::new()
                 .exit_on_failure();
-            file.write_all(status.comment.as_bytes()).exit_on_failure();
+            if status.comment.is_some() {
+                file.write_all(status.comment.as_ref().unwrap().as_bytes()).exit_on_failure();
+            }
             file.flush().exit_on_failure();
             std::process::Command::new(editor)
                 .arg(file.path())
@@ -191,8 +193,9 @@ fn main() {
                 .map_err(|x| x.to_string())
                 .and_then(|x| if x.success() { Ok(()) } else { Err(format!("editor exit with error: {}", x)) })
                 .exit_on_failure();
-            status.comment.clear();
-            file.reopen().exit_on_failure().read_to_string(&mut status.comment).exit_on_failure();
+            let mut buf = String::new();
+            file.reopen().exit_on_failure().read_to_string(&mut buf).exit_on_failure();
+            if !buf.is_empty() { status.comment.replace(buf); }
             db.put("status", serde_json::to_string(&status)
                 .exit_on_failure()).exit_on_failure();
         }
@@ -203,6 +206,10 @@ fn main() {
         SubCommand::Run { without_build } => {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
             run::run(&db, opt.tulip_dir.as_path(), without_build);
+        }
+        SubCommand::Submit { r#override } => {
+            let db = init_db(opt.tulip_dir.join("meta").as_path());
+            student::handle_submit(&db, r#override);
         }
     }
 }

@@ -124,12 +124,42 @@ pub struct Status {
     pub mount: Option<PathBuf>,
     pub built: bool,
     pub graded: Option<usize>,
-    pub comment: String,
+    pub comment: Option<String>,
     pub in_progress: Option<StudentConfig>,
     pub submitted: bool,
     pub image: bool,
+    pub mark: bool,
     pub stdout: Option<String>,
     pub stderr: Option<String>,
     pub build_stdout: Option<String>,
     pub build_stderr: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Default)]
+pub struct Submission {
+    pub built: bool,
+    pub graded: Option<usize>,
+    pub comment: Option<String>,
+    pub mark: bool,
+    pub stdout: Option<String>,
+    pub stderr: Option<String>,
+    pub build_stdout: Option<String>,
+    pub build_stderr: Option<String>,
+    pub r#override: bool,
+}
+
+impl Status {
+    pub fn get_submission(&self, r#override: bool) -> Submission {
+        Submission {
+            built: self.built,
+            graded: self.graded.clone(),
+            comment: self.comment.clone(),
+            mark: self.mark,
+            stdout: self.stdout.clone(),
+            stderr: self.stderr.clone(),
+            build_stdout: self.build_stderr.clone(),
+            build_stderr: self.build_stderr.clone(),
+            r#override,
+        }
+    }
 }
