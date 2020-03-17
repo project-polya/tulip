@@ -55,13 +55,6 @@ pub struct NSpawnConfig {
     pub no_new_privileges: bool,
     pub no_network: bool,
     pub limit: Option<Limit>,
-    pub extra_bind: Vec<Binding>,
-    // relative path based on `.local/tulip/image`
-    pub extra_bind_ro: Vec<Binding>,
-    // relative path based on `.local/tulip/image`
-    pub extra_overlay: Vec<Binding>,
-    // relative path based on `.local/tulip/image`
-    pub extra_overlay_ro: Vec<Binding>, // relative path based on `.local/tulip/image`
     pub shell: Option<PathBuf>
 }
 
@@ -100,7 +93,9 @@ pub struct FirejailConfig {
     pub limit: Option<Limit>,
     pub capacity: Vec<String>,
     pub capacity_drop: Vec<String>,
-    pub with_profile: Option<PathBuf>, // relative path based on `.local/tulip/image`
+    pub with_profile: Option<PathBuf>,
+    // relative path based on `.local/tulip/image`
+    pub has_x: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]
@@ -109,9 +104,11 @@ pub struct Config {
     pub firejail: FirejailConfig,
     pub notification: String,
     pub max_grade: usize,
-    pub capture_stdout: bool,
-    pub capture_stderr: bool,
     pub stdin: Option<PathBuf>,
+    pub extra_bind: Vec<Binding>,
+    pub extra_bind_ro: Vec<Binding>,
+    pub extra_overlay: Vec<Binding>,
+    pub extra_overlay_ro: Vec<Binding>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]

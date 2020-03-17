@@ -1,5 +1,5 @@
 use std::io::{BufRead, BufReader, Write};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::Stdio;
 use std::sync::atomic::AtomicPtr;
 use std::sync::atomic::Ordering::Relaxed;
@@ -10,99 +10,6 @@ use rocksdb::DB;
 
 use crate::{force_get_json, LogUnwrap};
 use crate::settings::{Config, Status};
-
-pub fn extra_bind(source: &Path, target: &Path, ro: bool) {
-    info!("binding {} to {}", source.display(), target.display());
-    let mut command = std::process::Command::new("sudo");
-    command.arg("-k").arg("mount").arg("--bind");
-    if ro { command.arg("-o").arg("ro"); }
-    command.arg(source)
-        .arg(target)
-        .spawn()
-        .exit_on_failure()
-        .wait()
-        .map_err(|x| x.to_string())
-        .and_then(|x| if x.success() { Ok(()) } else { Err(format!("bind failed with {}", x)) })
-        .exit_on_failure();
-}
-
-pub fn umount(target: &Path) {
-    info!("umounting {}", target.display());
-    let mut command = std::process::Command::new("sudo");
-    if let Err(e) = command.arg("-k").arg("umount")
-        .arg("-R")
-        .arg(target)
-        .spawn()
-        .exit_on_failure()
-        .wait()
-        .map_err(|x| x.to_string())
-        .and_then(|x| if x.success() { Ok(()) } else { Err(format!("umount failed with {}", x)) })
-    {
-        error!("{}", e);
-    }
-}
-
-pub fn extra_overlay(source: &Path, target: &Path, workdir: &Path, ro: bool) -> Option<(PathBuf, PathBuf)> {
-    info!("overlaying {} to {}", source.display(), target.display());
-    let mut command = std::process::Command::new("sudo");
-    command.arg("mount").arg("-t").arg("overlay").arg("overlay").arg("-o");
-    let mut res = None;
-    if !ro {
-        let work = workdir.join("data").join(uuid::Uuid::new_v4().to_string());
-        let upper = workdir.join("data").join(uuid::Uuid::new_v4().to_string());
-        std::fs::create_dir_all(work.as_path()).exit_on_failure();
-        std::fs::create_dir_all(upper.as_path()).exit_on_failure();
-        let work = work.canonicalize().exit_on_failure();
-        let upper = upper.canonicalize().exit_on_failure();
-        command.arg(format!("workdir={},upperdir={},lowerdir={}", work.display(), upper.display(), source.display()));
-        res.replace((work, upper));
-    } else {
-        command.arg(format!("lowerdir={}", source.display()));
-    }
-    command.arg(target)
-        .spawn()
-        .exit_on_failure()
-        .wait()
-        .map_err(|x| x.to_string())
-        .and_then(|x| if x.success() { Ok(()) } else { Err(format!("overlay failed with {}", x)) })
-        .exit_on_failure();
-    res
-}
-
-pub fn clear(target: &Path) {
-    info!("clearing {}", target.display());
-    if let Err(e) = std::process::Command::new("sudo")
-        .arg("-k")
-        .arg("rm")
-        .arg("-rf")
-        .arg(target)
-        .spawn()
-        .map_err(|x| x.to_string())
-        .and_then(|mut x| {
-            x.wait()
-                .map_err(|x| x.to_string())
-                .and_then(|x| if x.success() { Ok(()) } else { Err(format!("clearing failed with {}", x)) })
-        })
-    {
-        error!("{}", e);
-    }
-}
-
-pub fn mkdir(target: &Path) {
-    info!("making dir {}", target.display());
-    std::process::Command::new("sudo")
-        .arg("-k")
-        .arg("mkdir")
-        .arg("-p")
-        .arg(target)
-        .spawn()
-        .map_err(|x| x.to_string())
-        .and_then(|mut x| {
-            x.wait()
-                .map_err(|x| x.to_string())
-                .and_then(|x| if x.success() { Ok(()) } else { Err(format!("mkdir failed with {}", x)) })
-        }).exit_on_failure();
-}
 
 pub fn run(db: &DB, workdir: &Path, without_build: bool) {
     let config = force_get_json::<Config>(db, "config");
@@ -192,10 +99,10 @@ pub fn run(db: &DB, workdir: &Path, without_build: bool) {
     }
 
     let block: String = firejail.syscall.iter().filter(|x| !x.permit)
-        .map(|x|x.name.as_str())
+        .map(|x| x.name.as_str())
         .collect::<Vec<_>>().join(",");
     let permit: String = firejail.syscall.iter().filter(|x| x.permit)
-        .map(|x|x.name.as_str())
+        .map(|x| x.name.as_str())
         .collect::<Vec<_>>().join(",");
 
     if !block.is_empty() {
@@ -220,51 +127,9 @@ pub fn run(db: &DB, workdir: &Path, without_build: bool) {
 
     let mut stdin = None;
     if let Some(path) = &config.stdin {
-        stdin.replace(std::fs::read_to_string(path).exit_on_failure());
+        stdin.replace(std::fs::read_to_string(workdir.join("image").join(path)).exit_on_failure());
     }
 
-    let mut mounting = Vec::new();
-    let mut garbage = Vec::new();
-
-    for i in &config.systemd_nspawn.extra_bind {
-        let target = mount_point.join(i.target.as_path());
-        mkdir(target.as_path());
-        extra_bind(workdir.join(i.source.as_path()).as_path(),
-                   target.as_path(), false);
-        mounting.push(target.clone());
-    }
-
-    for i in &config.systemd_nspawn.extra_bind_ro {
-        let target = mount_point.join(i.target.as_path());
-        mkdir(target.as_path());
-        extra_bind(workdir.join(i.source.as_path()).as_path(),
-                   target.as_path(), true);
-        mounting.push(target.clone());
-    }
-
-
-
-    for i in &config.systemd_nspawn.extra_overlay {
-        let target = mount_point.join(i.target.as_path());
-        mkdir(target.as_path());
-        for i in extra_overlay(workdir.join(i.source.as_path()).as_path(),
-                               target.as_path(), workdir, false) {
-            garbage.push(i.0);
-            garbage.push(i.1);
-        };
-        mounting.push(target.clone());
-    }
-
-    for i in &config.systemd_nspawn.extra_overlay_ro {
-        let target = mount_point.join(i.target.as_path());
-        mkdir(target.as_path());
-        for i in extra_overlay(workdir.join(i.source.as_path()).as_path(),
-                               target.as_path(), workdir, true) {
-            garbage.push(i.0);
-            garbage.push(i.1);
-        };
-        mounting.push(target.clone());
-    }
 
     if firejail.function.no3d {
         command.arg("--no3d");
@@ -306,17 +171,32 @@ pub fn run(db: &DB, workdir: &Path, without_build: bool) {
         command.stdin(Stdio::piped());
     }
 
+    if firejail.has_x {
+        info!("adjust xhost");
+        std::process::Command::new("xhost").arg("+")
+            .spawn()
+            .exit_on_failure()
+            .wait()
+            .exit_on_failure();
+    }
+
+    for i in &config.extra_bind {
+        command.arg(format!("--whitelist={}", mount_point.join(i.target.as_path()).display()));
+    }
+
+    for i in &config.extra_overlay {
+        command.arg(format!("--whitelist=/{}", mount_point.join(i.target.as_path()).display()));
+    }
+
+    command.arg(format!("--whitelist={}", mount_point.join("data").display()));
 
     let mut child = command.arg(shell)
         .arg(format!("/data/{}", student.run_shell.display()))
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
-        .unwrap_or_else(|e| {
-            error!("{}", e);
-            clear_these(&mounting, &garbage);
-            std::process::exit(1);
-        });
+        .exit_on_failure();
+
     info!("running start");
 
     if let Some(content) = stdin {
@@ -352,26 +232,22 @@ pub fn run(db: &DB, workdir: &Path, without_build: bool) {
         error!("failed to join io threads");
     };
 
+
     child.wait()
         .map_err(|x| x.to_string())
         .and_then(|x| if x.success() { Ok(()) } else { Err(format!("failed with {}", x)) })
-        .unwrap_or_else(|e| {
-            error!("{}", e);
-            clear_these(&mounting, &garbage);
-            std::process::exit(1);
-        });
-    clear_these(&mounting, &garbage);
+        .exit_on_failure();
+
+    if firejail.has_x {
+        info!("ban connections to xhost");
+        std::process::Command::new("xhost").arg("-")
+            .spawn()
+            .exit_on_failure()
+            .wait()
+            .exit_on_failure();
+    }
+
     status.stderr.replace(String::from_utf8_lossy(err_captured.as_slice()).to_string());
     status.stdout.replace(String::from_utf8_lossy(out_captured.as_slice()).to_string());
     db.put("status", serde_json::to_vec(&status).exit_on_failure()).exit_on_failure();
-}
-
-fn clear_these(mounting: &Vec<PathBuf>, garbage: &Vec<PathBuf>) {
-    for i in mounting {
-        umount(i.as_path());
-    }
-
-    for i in garbage {
-        clear(i.as_path());
-    }
 }

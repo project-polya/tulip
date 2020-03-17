@@ -1,5 +1,5 @@
 use std::fmt::{Debug, Display};
-use std::io::{Read, Seek, SeekFrom, Write};
+use std::io::{Read, Write};
 use std::path::Path;
 
 use log::*;

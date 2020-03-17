@@ -103,26 +103,6 @@ pub fn handle(db: &DB, rebuild: bool, workdir: &Path) {
         builder.arg(format!("--drop-capacity={}", i));
     }
 
-    for i in &config.systemd_nspawn.extra_bind {
-        let realpath = workdir.join(i.source.as_path()).canonicalize().exit_on_failure();
-        builder.arg(format!("--bind={}:{}", realpath.display(), i.target.display()));
-    }
-
-    for i in &config.systemd_nspawn.extra_bind_ro {
-        let realpath = workdir.join(i.source.as_path()).canonicalize().exit_on_failure();
-        builder.arg(format!("--bind-ro={}:{}", realpath.display(), i.target.display()));
-    }
-
-    for i in &config.systemd_nspawn.extra_overlay {
-        let realpath = workdir.join(i.source.as_path()).canonicalize().exit_on_failure();
-        builder.arg(format!("--overlay={}:{}", realpath.display(), i.target.display()));
-    }
-
-    for i in &config.systemd_nspawn.extra_overlay_ro {
-        let realpath = workdir.join(i.source.as_path()).canonicalize().exit_on_failure();
-        builder.arg(format!("--overlay-ro={}:{}", realpath.display(), i.target.display()));
-    }
-
     for i in &config.systemd_nspawn.syscall {
         if i.permit {
             builder.arg(format!("--system-call-filter={}", i.name));
