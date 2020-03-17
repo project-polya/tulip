@@ -3,6 +3,7 @@ use std::io::{Read, Write};
 use std::path::Path;
 
 use log::*;
+use mimalloc::MiMalloc;
 use rocksdb::DB;
 use structopt::StructOpt;
 
@@ -19,6 +20,10 @@ mod status;
 mod pull_image;
 mod build;
 mod run;
+
+#[global_allocator]
+static ALLOC: MiMalloc = MiMalloc;
+
 fn force_get(db: &DB, key: &str) -> String {
     db.get(key)
         .map_err(|x| x.to_string())

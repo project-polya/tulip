@@ -30,7 +30,7 @@ pub enum StatusWatch {
 
 #[derive(StructOpt, Debug)]
 pub struct Opt {
-    #[structopt(short, long, about = "the log level", env = "TULIP_LOG_LEVEL", default_value = "trace",
+    #[structopt(short, long, about = "the log level", env = "TULIP_LOG_LEVEL", default_value = "info",
     possible_values = & ["error", "trace", "info", "debug", "off", "warn"])]
     pub log_level: String,
     #[structopt(long, about = "the work directory of tulip", env = "TULIP_DIR", default_value = ".tulip")]
