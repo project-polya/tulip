@@ -70,8 +70,8 @@ pub fn handle(db: &DB, rebuild: bool, workdir: &Path) {
         .exit_on_failure();
 
     status.built = true;
-    status.stdout.replace(String::from_utf8_lossy(out_captured.as_slice()).to_string());
-    status.stderr.replace(String::from_utf8_lossy(err_captured.as_slice()).to_string());
+    status.build_stdout.replace(String::from_utf8_lossy(out_captured.as_slice()).to_string());
+    status.build_stderr.replace(String::from_utf8_lossy(err_captured.as_slice()).to_string());
     db.put("status", serde_json::to_string(&status).exit_on_failure()).exit_on_failure();
 }
 

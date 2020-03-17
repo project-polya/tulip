@@ -6,7 +6,7 @@ use reqwest::{blocking, Url};
 use rocksdb::DB;
 use serde::*;
 
-use crate::{force_get, force_get_json, LogUnwrap};
+use crate::{clear_status, force_get, force_get_json, LogUnwrap};
 use crate::settings::{Status, StudentConfig};
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -200,4 +200,27 @@ pub fn handle_submit(db: &DB, r#override: bool) {
         .exit_on_failure();
     status.submitted = true;
     db.put("status", serde_json::to_string(&status).exit_on_failure()).exit_on_failure();
+}
+
+pub fn skip(db: &DB, force: bool, workdir: &Path) {
+    let server = force_get(db, "server");
+    let uuid = force_get(db, "uuid");
+    let mut status = force_get_json::<Status>(db, "status");
+    let student = status.in_progress.as_ref().unwrap_or_else(|| {
+        error!("nothing to skip");
+        std::process::exit(1);
+    });
+    let code = blocking::Client::new()
+        .put(format!("{}/student{}/skip", server, student.student_id).parse::<Url>().exit_on_failure())
+        .bearer_auth(uuid)
+        .send()
+        .map(|x| x.status().is_success())
+        .unwrap_or_else(|x| {
+            error!("{}", x);
+            false
+        });
+    if !code && !force {
+        std::process::exit(1);
+    }
+    clear_status(db, &mut status, workdir);
 }

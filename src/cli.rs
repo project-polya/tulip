@@ -4,41 +4,41 @@ use structopt::*;
 
 #[derive(StructOpt, Debug)]
 pub enum StatusWatch {
-    #[structopt(about = "current project status")]
+    #[structopt(about = "Current project status")]
     Current,
-    #[structopt(about = "global configuration")]
+    #[structopt(about = "Global configuration")]
     Global,
-    #[structopt(about = "remote student lists")]
+    #[structopt(about = "Remote student lists")]
     Remote,
-    #[structopt(about = "remote student info")]
+    #[structopt(about = "Remote student info")]
     RemoteID {
-        #[structopt(long, short, about = "remote student info")]
+        #[structopt(long, short, about = "Remote student info")]
         id: String
     },
-    #[structopt(about = "edit current project status")]
+    #[structopt(about = "Edit current project status")]
     EditCurrent {
-        #[structopt(short, long, env = "EDITOR", help = "the editor software", default_value = "nano")]
+        #[structopt(short, long, env = "EDITOR", help = "The editor software", default_value = "nano")]
         editor: String
     },
-    #[structopt(about = "edit current global settings")]
+    #[structopt(about = "Edit current global settings")]
     EditGlobal {
-        #[structopt(short, long, env = "EDITOR", help = "the editor software", default_value = "nano")]
+        #[structopt(short, long, env = "EDITOR", help = "The editor software", default_value = "nano")]
         editor: String
     },
 }
 
 #[derive(StructOpt, Debug)]
 pub enum Sandbox {
-    #[structopt(about = "enter the systemd-nspawn sandbox")]
+    #[structopt(about = "Enter the systemd-nspawn sandbox")]
     SystemdNspawn {
-        #[structopt(long, help = "rsync the student data")]
+        #[structopt(long, help = "Rsync the student data")]
         rsync: bool,
-        #[structopt(long, help = "enter without the global config")]
+        #[structopt(long, help = "Enter without the global config")]
         without_config: bool,
     },
-    #[structopt(about = "enter the firejail sandbox")]
+    #[structopt(about = "Enter the firejail sandbox")]
     Firejail {
-        #[structopt(long, help = "enter without the global config")]
+        #[structopt(long, help = "Enter without the global config")]
         without_config: bool,
     },
 }
@@ -48,105 +48,117 @@ pub struct Opt {
     #[structopt(short, long, about = "the log level", env = "TULIP_LOG_LEVEL", default_value = "info",
     possible_values = & ["error", "trace", "info", "debug", "off", "warn"])]
     pub log_level: String,
-    #[structopt(long, about = "the work directory of tulip", env = "TULIP_DIR", default_value = ".tulip")]
+    #[structopt(short, long, about = "The work directory of tulip", env = "TULIP_DIR", default_value = ".tulip")]
     pub tulip_dir: PathBuf,
     #[structopt(subcommand)]
     pub command: SubCommand,
-    #[structopt(long, about = "path to nutshell binary", env = "NUTSHELL_BIN", default_value = "nutshell")]
+    #[structopt(short, long, about = "Path to nutshell binary", env = "NUTSHELL_BIN", default_value = "nutshell")]
     pub nutshell: PathBuf,
 }
 
 #[derive(StructOpt, Debug)]
 pub enum SubCommand {
-    #[structopt(about = "register this client")]
+    #[structopt(about = "Register this client")]
     Register {
-        #[structopt(short, long, about = "the server address", env = "TULIP_SERVER")]
+        #[structopt(short, long, about = "Rhe server address", env = "TULIP_SERVER")]
         server: String,
-        #[structopt(short, long, about = "ssh username", env = "TULIP_TOKEN")]
+        #[structopt(short, long, about = "Ssh username", env = "TULIP_TOKEN")]
         token: String,
-        #[structopt(long, help = "force to register a new uuid")]
+        #[structopt(long, help = "Force to register a new uuid")]
         force: bool,
     },
-    #[structopt(about = "pull the base image")]
+    #[structopt(about = "Pull the base image")]
     PullImage {
-        #[structopt(long, help = "force to renew the current image")]
+        #[structopt(long, help = "Force to renew the current image")]
         force: bool,
         #[structopt(short, long, help = "backend downloader", default_value = "wget", possible_values = & ["wget", "aria2c"])]
         backend: String,
         #[structopt(long, help = "Use this if you have already untar an image on your own")]
         local_set: bool,
     },
-    #[structopt(about = "unregister the client and clean up local environment")]
+    #[structopt(about = "Unregister the client and clean up local environment")]
     CleanAll {
-        #[structopt(long, help = "force to remove all local data even without successful communication")]
+        #[structopt(long, help = "Force to remove all local data even without successful communication")]
         force: bool
     },
-    #[structopt(about = "see the current status")]
+    #[structopt(about = "See the current status")]
     Status {
         #[structopt(subcommand)]
         command: StatusWatch,
     },
-    #[structopt(about = "refresh the global config")]
+    #[structopt(about = "Refresh the global config")]
     RefreshConfig,
 
-    #[structopt(about = "initialize the overlay filesystem")]
+    #[structopt(about = "Initialize the overlay filesystem")]
     InitOverlay {
-        #[structopt(short, long, help = "print a mount result")]
+        #[structopt(short, long, help = "Print a mount result")]
         print_result: bool,
-        #[structopt(short, long, help = "enter a shell of systemd-nspawn after initialization")]
+        #[structopt(short, long, help = "Enter a shell of systemd-nspawn after initialization")]
         shell: bool,
-        #[structopt(short, long, about = "the diretory to mount the root", default_value = "/mnt")]
+        #[structopt(short, long, about = "The diretory to mount the root", default_value = "/mnt")]
         mount_dir: PathBuf,
-        #[structopt(short, long, about = "when specified, a new tmpfs with the given size will mount in the root")]
+        #[structopt(short, long, about = "When specified, a new tmpfs with the given size will mount in the root")]
         tmp_size: Option<usize>,
-        #[structopt(long, help = "force to mount overlay even if there is a record in the database. this can be useful if you want to recover the progress after reboot")]
+        #[structopt(long, help = "Force to mount overlay even if there is a record in the database. this can be useful if you want to recover the progress after reboot")]
         force: bool,
     },
-    #[structopt(about = "delete the current overlay system")]
+    #[structopt(about = "Delete the current overlay system")]
     DestroyOverlay,
     #[structopt(about = "Give a grade to the student")]
     Grade {
-        #[structopt(short, long, help = "the score")]
+        #[structopt(short, long, help = "The score")]
         score: usize,
-        #[structopt(long, about = "allow override existing score")]
+        #[structopt(long, about = "Allow override existing score")]
         r#override: bool,
     },
     #[structopt(about = "Open the comment editor")]
     Comment {
-        #[structopt(short, long, env = "EDITOR", help = "the editor software", default_value = "nano")]
+        #[structopt(short, long, env = "EDITOR", help = "The editor software", default_value = "nano")]
         editor: String
     },
-    #[structopt(about = "fetch student project")]
+    #[structopt(about = "Fetch student project")]
     Fetch {
         #[structopt(short, long, help = "backend downloader", default_value = "wget", possible_values = & ["wget", "aria2c"])]
         backend: String,
-        #[structopt(short, long, about = "do not request next task, only sync current project")]
+        #[structopt(short, long, about = "Do not request next task, only sync current project")]
         download_only: bool,
-        #[structopt(short, long, help = "shellcheck path", env = "SHELL_CHECK_BIN", default_value = "shellcheck")]
+        #[structopt(short, long, help = "Shellcheck path", env = "SHELL_CHECK_BIN", default_value = "shellcheck")]
         shellcheck: PathBuf,
     },
-    #[structopt(about = "build the current project")]
+    #[structopt(about = "Build the current project")]
     Build {
-        #[structopt(long, about = "rebuild the project")]
+        #[structopt(long, about = "Rebuild the project")]
         rebuild: bool
     },
 
-    #[structopt(about = "build the current project")]
+    #[structopt(about = "Build the current project")]
     Run {
-        #[structopt(long, about = "force to run without build")]
+        #[structopt(long, about = "Force to run without build")]
         without_build: bool
     },
 
-    #[structopt(about = "edit current global settings")]
+    #[structopt(about = "Edit current global settings")]
     Submit {
-        #[structopt(long, about = "allow overriding existing submission")]
+        #[structopt(long, about = "Allow overriding existing submission")]
         r#override: bool
     },
-    #[structopt(about = "clear the current project")]
+    #[structopt(about = "Clear the current project")]
     Clear,
-    #[structopt(about = "manually enter the sandbox")]
+    #[structopt(about = "Manually enter the sandbox")]
     EnterSandbox {
         #[structopt(subcommand)]
         command: Sandbox,
     },
+    #[structopt(about = "Mark the current project")]
+    Mark {
+        #[structopt(short, long, about = "Remove the mark")]
+        remove: bool,
+    },
+
+    #[structopt(about = "Skip the current project")]
+    Skip {
+        #[structopt(long, about = "Force skipping even without a proper response from the server")]
+        force: bool,
+    },
+
 }

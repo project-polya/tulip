@@ -239,6 +239,10 @@ fn main() {
                                         &config, !without_config, opt.tulip_dir.as_path())
                 }
                 Sandbox::SystemdNspawn { rsync, without_config } => {
+                    if status.mount.is_none() {
+                        error!("please mount a overlay first");
+                        std::process::exit(1);
+                    };
                     build::build_nspawn(&db, &status, opt.tulip_dir.as_path(), rsync, !without_config)
                 }
             };
@@ -247,6 +251,23 @@ fn main() {
                 .wait()
                 .exit_on_failure();
             info!("{}", exiting);
+        },
+
+        SubCommand::Mark { remove } => {
+            let db = init_db(opt.tulip_dir.join("meta").as_path());
+            let mut status = force_get_json::<Status>(&db, "status");
+            if status.in_progress.is_none() {
+                error!("no current project");
+                std::process::exit(1);
+            }
+            status.mark = !remove;
+            db.put("status", serde_json::to_string(&status)
+                .exit_on_failure()).exit_on_failure();
+        },
+
+        SubCommand::Skip { force } => {
+            let db = init_db(opt.tulip_dir.join("meta").as_path());
+            student::skip(&db, force, opt.tulip_dir.as_path());
         }
     }
 }
