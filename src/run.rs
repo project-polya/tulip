@@ -107,7 +107,7 @@ pub fn mkdir(target: &Path) {
 pub fn run(db: &DB, workdir: &Path, without_build: bool) {
     let config = force_get_json::<Config>(db, "config");
 
-    let status = force_get_json::<Status>(db, "status");
+    let mut status = force_get_json::<Status>(db, "status");
 
     if status.in_progress.is_none() {
         error!("no current project");
@@ -126,7 +126,7 @@ pub fn run(db: &DB, workdir: &Path, without_build: bool) {
 
     let student = status.in_progress.as_ref().unwrap();
 
-    let mount_point = status.mount.unwrap();
+    let mount_point = status.mount.as_ref().unwrap();
 
     let firejail = &config.firejail;
 
@@ -353,15 +353,17 @@ pub fn run(db: &DB, workdir: &Path, without_build: bool) {
     };
 
     child.wait()
-        .map_err(|x|x.to_string())
-        .and_then(|x| if x.success() {Ok(())} else {Err(format!("failed with {}", x))})
+        .map_err(|x| x.to_string())
+        .and_then(|x| if x.success() { Ok(()) } else { Err(format!("failed with {}", x)) })
         .unwrap_or_else(|e| {
             error!("{}", e);
             clear_these(&mounting, &garbage);
             std::process::exit(1);
         });
-
     clear_these(&mounting, &garbage);
+    status.stderr.replace(String::from_utf8_lossy(err_captured.as_slice()).to_string());
+    status.stdout.replace(String::from_utf8_lossy(out_captured.as_slice()).to_string());
+    db.put("status", serde_json::to_vec(&status).exit_on_failure()).exit_on_failure();
 }
 
 fn clear_these(mounting: &Vec<PathBuf>, garbage: &Vec<PathBuf>) {
