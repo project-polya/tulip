@@ -115,16 +115,16 @@ fn main() {
             let db = opt.tulip_dir.join("meta");
             register::handle(opt.tulip_dir.as_path(), server.as_str(), token.as_str(), &init_db(db.as_path()), force);
         }
-        SubCommand::CleanAll { force } => {
+        SubCommand::CleanAll { force, keep_image } => {
             must_sudo();
             let db = opt.tulip_dir.join("meta");
-            let res = clean_all::handle_clean(opt.tulip_dir.as_path(), &init_db(db.as_path()));
+            let res = clean_all::handle_clean(opt.tulip_dir.as_path(), &init_db(db.as_path()), keep_image);
             if !res && !force {
                 error!("clean up failed");
                 std::process::exit(1);
             } else if !res {
                 warn!("clearing failed in the clean way. Fine, let us do it in the dirty way");
-                clean_all::handle_dirty(opt.tulip_dir.as_path());
+                clean_all::handle_dirty(opt.tulip_dir.as_path(), keep_image);
             };
         }
         SubCommand::PullImage { force, backend, local_set } => {

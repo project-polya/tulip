@@ -220,6 +220,7 @@ pub fn skip(db: &DB, force: bool, workdir: &Path) {
             false
         });
     if !code && !force {
+        error!("server refused the request");
         std::process::exit(1);
     }
     clear_status(db, &mut status, workdir);

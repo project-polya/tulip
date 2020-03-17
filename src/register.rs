@@ -20,7 +20,7 @@ pub fn handle(tulip_dir: &Path, server: &str, token: &str, db: &DB, force: bool)
         let current_uuid = String::from_utf8_lossy(current.as_ref());
         if force {
             warn!("already inited with {}, but I will do it anyway", current_uuid);
-            if !handle_clean(tulip_dir.as_ref(), db) {
+            if !handle_clean(tulip_dir.as_ref(), db, false) {
                 error!("clean failed");
                 std::process::exit(0);
             }

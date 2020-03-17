@@ -6,7 +6,7 @@ use rocksdb::{DB, Options};
 
 use crate::settings::Status;
 
-pub fn handle_clean(workdir: &Path, db: &DB) -> bool {
+pub fn handle_clean(workdir: &Path, db: &DB, keep_image: bool) -> bool {
     let status;
     if let Ok(Some(mut _status)) = db.get("status") {
         if let Ok(inner) = simd_json::serde::from_slice::<Status>(_status.as_mut_slice()) {
@@ -75,11 +75,11 @@ pub fn handle_clean(workdir: &Path, db: &DB) -> bool {
             return false;
         }
     }
-    handle_dirty(workdir);
+    handle_dirty(workdir, keep_image);
     true
 }
 
-pub fn handle_dirty(workdir: &Path) {
+pub fn handle_dirty(workdir: &Path, keep_image: bool) {
     match DB::destroy(&Options::default(), workdir.join("meta").as_path()) {
         Ok(_) => { info!("local database destroyed"); }
         Err(e) => {
@@ -92,10 +92,12 @@ pub fn handle_dirty(workdir: &Path) {
             error!("failed to remove data dir: {}", e);
         }
     }
-    match std::fs::remove_dir_all(workdir.join("image")) {
-        Ok(_) => { info!("image dir removed"); }
-        Err(e) => {
-            error!("failed to remove image dir: {}", e);
+    if !keep_image {
+        match std::fs::remove_dir_all(workdir.join("image")) {
+            Ok(_) => { info!("image dir removed"); }
+            Err(e) => {
+                error!("failed to remove image dir: {}", e);
+            }
         }
     }
     match std::fs::remove_dir_all(workdir.join("student")) {

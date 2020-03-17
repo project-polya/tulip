@@ -79,7 +79,9 @@ pub enum SubCommand {
     #[structopt(about = "Unregister the client and clean up local environment")]
     CleanAll {
         #[structopt(long, help = "Force to remove all local data even without successful communication")]
-        force: bool
+        force: bool,
+        #[structopt(short, long, help = "Keep the image")]
+        keep_image: bool,
     },
     #[structopt(about = "See the current status")]
     Status {
