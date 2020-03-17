@@ -14,7 +14,7 @@ use crate::settings::{Config, Status};
 
 pub fn handle(db: &DB, rebuild: bool, workdir: &Path) {
     let mut status = force_get_json::<Status>(db, "status");
-    let config = force_get_json::<Config>(db, "config");
+
     if status.built && !rebuild {
         error!("already built");
         std::process::exit(1);
@@ -32,92 +32,7 @@ pub fn handle(db: &DB, rebuild: bool, workdir: &Path) {
 
     let student = status.in_progress.as_ref().unwrap();
 
-    let mount_point = status.mount.as_ref().unwrap();
-
-    let data = workdir.join("student");
-    let target = mount_point.join("data");
-
-    info!("copy student {} to {}", data.display(), target.display());
-    std::process::Command::new("sudo")
-        .arg("-k")
-        .arg("rsync")
-        .arg("-r")
-        .arg(format!("{}/", data.display()))
-        .arg(target)
-        .spawn()
-        .exit_on_failure()
-        .wait()
-        .map_err(|x| x.to_string())
-        .and_then(|x| if x.success() { Ok(()) } else { Err(format!("failed with {}", x)) })
-        .exit_on_failure();
-    info!("starting systemd-nspawn");
-    let mut builder = std::process::Command::new("sudo");
-
-    builder.arg("-k").arg("systemd-nspawn");
-    if config.systemd_nspawn.no_network {
-        builder.arg("--private-network");
-    } else {
-        builder.arg("--bind-ro=/etc/resolv.conf");
-    }
-    if config.systemd_nspawn.pid2 {
-        builder.arg("--as-pid2");
-    }
-    if config.systemd_nspawn.no_new_privileges {
-        builder.arg("--no-new-privileges");
-    }
-    if let Some(limit) = &config.systemd_nspawn.limit {
-        if let Some(cpu) = limit.cpu_nums {
-            builder.arg(format!("--cpu-affinity={}",
-                                (0..cpu).map(|x| x.to_string()).collect::<Vec<_>>().join(",")));
-        }
-        if let Some(filesize) = limit.filesize_limit {
-            builder.arg(format!("--rlimit=FSIZE={}", filesize));
-        }
-        if let Some(proc) = limit.process_limit {
-            builder.arg(format!("--rlimit=NPROC={}", proc));
-        }
-        if let Some(nofile) = limit.nofile_limit {
-            builder.arg(format!("--rlimit=NOFILE={}", nofile));
-        }
-        if let Some(sigpending) = limit.sigpending_limit {
-            builder.arg(format!("--rlimit=SIGPENDING={}", sigpending));
-        }
-        if let Some(mem) = limit.mem_limit {
-            builder.arg(format!("--rlimit=AS={}", mem));
-        }
-    }
-
-    if let Some(dir) = &config.systemd_nspawn.work_path {
-        builder.arg(format!("--chdir={}", dir.display()));
-    }
-
-    for i in &config.systemd_nspawn.env {
-        builder.arg(format!("--setenv={}={}", i.name.as_str(), i.value.as_str()));
-    }
-
-    for i in &config.systemd_nspawn.capacity {
-        builder.arg(format!("--capacity={}", i));
-    }
-
-    for i in &config.systemd_nspawn.capacity_drop {
-        builder.arg(format!("--drop-capacity={}", i));
-    }
-
-    for i in &config.systemd_nspawn.syscall {
-        if i.permit {
-            builder.arg(format!("--system-call-filter={}", i.name));
-        } else {
-            builder.arg(format!("--system-call-filter=~{}", i.name));
-        }
-    }
-
-    let shell = config.systemd_nspawn.shell
-        .as_ref().map(|x| x.as_path()).unwrap_or("/bin/sh".as_ref());
-
-    let mut child = builder.arg("--quiet")
-        .arg("-D")
-        .arg(mount_point)
-        .arg(shell)
+    let mut child = build_nspawn(&db, &status, workdir, true, true)
         .arg(format!("/data/{}", student.build_shell.display()))
         .stderr(Stdio::piped())
         .stdout(Stdio::piped())
@@ -158,4 +73,104 @@ pub fn handle(db: &DB, rebuild: bool, workdir: &Path) {
     status.stdout.replace(String::from_utf8_lossy(out_captured.as_slice()).to_string());
     status.stderr.replace(String::from_utf8_lossy(err_captured.as_slice()).to_string());
     db.put("status", serde_json::to_string(&status).exit_on_failure()).exit_on_failure();
+}
+
+pub fn build_nspawn(db: &DB, status: &Status, workdir: &Path, sync_student: bool, with_config: bool) -> std::process::Command {
+    let config = force_get_json::<Config>(db, "config");
+    let mount_point = status.mount.as_ref().unwrap();
+
+    let data = workdir.join("student");
+    let target = mount_point.join("data");
+
+    if sync_student {
+        info!("sync student directory {} to {}", data.display(), target.display());
+
+        std::process::Command::new("sudo")
+            .arg("-k")
+            .arg("rsync")
+            .arg("-r")
+            .arg(format!("{}/", data.display()))
+            .arg(target)
+            .spawn()
+            .exit_on_failure()
+            .wait()
+            .map_err(|x| x.to_string())
+            .and_then(|x| if x.success() { Ok(()) } else { Err(format!("failed with {}", x)) })
+            .exit_on_failure();
+    }
+
+    info!("starting systemd-nspawn");
+    let mut builder = std::process::Command::new("sudo");
+
+    builder.arg("-k")
+        .arg("systemd-nspawn")
+        .arg("--quiet")
+        .arg("-D")
+        .arg(mount_point);
+
+    if with_config {
+        if config.systemd_nspawn.no_network {
+            builder.arg("--private-network");
+        } else {
+            builder.arg("--bind-ro=/etc/resolv.conf");
+        }
+        if config.systemd_nspawn.pid2 {
+            builder.arg("--as-pid2");
+        }
+        if config.systemd_nspawn.no_new_privileges {
+            builder.arg("--no-new-privileges");
+        }
+        if let Some(limit) = &config.systemd_nspawn.limit {
+            if let Some(cpu) = limit.cpu_nums {
+                builder.arg(format!("--cpu-affinity={}",
+                                    (0..cpu).map(|x| x.to_string()).collect::<Vec<_>>().join(",")));
+            }
+            if let Some(filesize) = limit.filesize_limit {
+                builder.arg(format!("--rlimit=FSIZE={}", filesize));
+            }
+            if let Some(proc) = limit.process_limit {
+                builder.arg(format!("--rlimit=NPROC={}", proc));
+            }
+            if let Some(nofile) = limit.nofile_limit {
+                builder.arg(format!("--rlimit=NOFILE={}", nofile));
+            }
+            if let Some(sigpending) = limit.sigpending_limit {
+                builder.arg(format!("--rlimit=SIGPENDING={}", sigpending));
+            }
+            if let Some(mem) = limit.mem_limit {
+                builder.arg(format!("--rlimit=AS={}", mem));
+            }
+        }
+
+        if let Some(dir) = &config.systemd_nspawn.work_path {
+            builder.arg(format!("--chdir={}", dir.display()));
+        }
+
+        for i in &config.systemd_nspawn.env {
+            builder.arg(format!("--setenv={}={}", i.name.as_str(), i.value.as_str()));
+        }
+
+        for i in &config.systemd_nspawn.capacity {
+            builder.arg(format!("--capacity={}", i));
+        }
+
+        for i in &config.systemd_nspawn.capacity_drop {
+            builder.arg(format!("--drop-capacity={}", i));
+        }
+
+        for i in &config.systemd_nspawn.syscall {
+            if i.permit {
+                builder.arg(format!("--system-call-filter={}", i.name));
+            } else {
+                builder.arg(format!("--system-call-filter=~{}", i.name));
+            }
+        }
+
+        let shell = config.systemd_nspawn.shell
+            .as_ref().map(|x| x.as_path()).unwrap_or("/bin/sh".as_ref());
+
+        builder.arg(shell);
+    }
+
+    builder
 }

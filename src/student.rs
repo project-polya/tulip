@@ -42,7 +42,14 @@ pub fn handle_request(db: &DB, backend: &str, workdir: &Path, download_only: boo
             .get(format!("{}/next", server).parse::<Url>().exit_on_failure())
             .bearer_auth(uuid.as_str())
             .send()
-            .and_then(|x| x.json::<StudentConfigResponse>()).exit_on_failure();
+            .map_err(|x| x.to_string())
+            .and_then(|x| {
+                let text = x.text().map_err(|x| x.to_string());
+                debug!("remote responce: {:#?}", text);
+                text.and_then(|mut x|
+                    simd_json::serde::from_str::<StudentConfigResponse>(x.as_mut_str())
+                        .map_err(|x| x.to_string()))
+            }).exit_on_failure();
         if let Some(f) = new_student.failure {
             error!("failed to get next student: {}", f);
             std::process::exit(1);
@@ -132,8 +139,8 @@ pub fn handle_request(db: &DB, backend: &str, workdir: &Path, download_only: boo
         .arg(student_dir.join(student.build_shell.as_path()))
         .spawn()
         .and_then(|mut x| x.wait())
-        .map_err(|x|x.to_string())
-        .and_then(|x| if x.success() {Ok(())} else { Err(format!("failed with {}", x)) })
+        .map_err(|x| x.to_string())
+        .and_then(|x| if x.success() { Ok(()) } else { Err(format!("failed with {}", x)) })
     {
         warn!("failed to shellcheck build script: {}", e);
     };
@@ -144,8 +151,8 @@ pub fn handle_request(db: &DB, backend: &str, workdir: &Path, download_only: boo
         .arg(student_dir.join(student.run_shell.as_path()))
         .spawn()
         .and_then(|mut x| x.wait())
-        .map_err(|x|x.to_string())
-        .and_then(|x| if x.success() {Ok(())} else { Err(format!("failed with {}", x)) })
+        .map_err(|x| x.to_string())
+        .and_then(|x| if x.success() { Ok(()) } else { Err(format!("failed with {}", x)) })
     {
         warn!("failed to shellcheck build script: {}", e);
     };

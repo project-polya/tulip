@@ -7,7 +7,7 @@ use mimalloc::MiMalloc;
 use rocksdb::DB;
 use structopt::StructOpt;
 
-use crate::cli::{Opt, SubCommand};
+use crate::cli::{Opt, Sandbox, SubCommand};
 use crate::settings::*;
 
 mod cli;
@@ -216,5 +216,60 @@ fn main() {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
             student::handle_submit(&db, r#override);
         }
+        SubCommand::Clear => {
+            let db = init_db(opt.tulip_dir.join("meta").as_path());
+            let mut status = force_get_json::<Status>(&db, "status");
+            if status.in_progress.is_some() && !status.submitted {
+                error!("please submit or skip the current project first");
+                std::process::exit(1);
+            }
+            clear_status(&db, &mut status, opt.tulip_dir.as_path());
+        }
+        SubCommand::EnterSandbox { command } => {
+            let db = init_db(opt.tulip_dir.join("meta").as_path());
+            let status = force_get_json::<Status>(&db, "status");
+            let config = force_get_json::<Config>(&db, "config");
+            let mut exec = match command {
+                cli::Sandbox::Firejail { without_config } => {
+                    let mount_point = status.mount.unwrap_or_else(|| {
+                        error!("please mount a overlay first");
+                        std::process::exit(1);
+                    });
+                    run::build_firejail(mount_point.as_path(),
+                                        &config, !without_config, opt.tulip_dir.as_path())
+                }
+                Sandbox::SystemdNspawn { rsync, without_config } => {
+                    build::build_nspawn(&db, &status, opt.tulip_dir.as_path(), rsync, !without_config)
+                }
+            };
+            let exiting = exec.spawn()
+                .exit_on_failure()
+                .wait()
+                .exit_on_failure();
+            info!("{}", exiting);
+        }
     }
+}
+
+fn clear_status(db: &DB, status: &mut Status, workdir: &Path) {
+    overlay::handle_destroy(&db, workdir);
+    *status = Status {
+        mount: None,
+        built: false,
+        graded: None,
+        comment: None,
+        in_progress: None,
+        submitted: false,
+        image: status.image,
+        mark: false,
+        stdout: None,
+        stderr: None,
+        build_stdout: None,
+        build_stderr: None,
+    };
+    if let Err(e) = std::fs::remove_dir_all(workdir.join("student")) {
+        warn!("failed to remove student dir: {}", e);
+    }
+    db.put("status", serde_json::to_string(status)
+        .exit_on_failure()).exit_on_failure();
 }

@@ -96,6 +96,8 @@ pub struct FirejailConfig {
     pub with_profile: Option<PathBuf>,
     // relative path based on `.local/tulip/image`
     pub has_x: bool,
+    pub env: Vec<EnvPair>,
+    pub env_remove: Vec<String>
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]

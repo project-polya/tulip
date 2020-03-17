@@ -25,7 +25,22 @@ pub enum StatusWatch {
         #[structopt(short, long, env = "EDITOR", help = "the editor software", default_value = "nano")]
         editor: String
     },
+}
 
+#[derive(StructOpt, Debug)]
+pub enum Sandbox {
+    #[structopt(about = "enter the systemd-nspawn sandbox")]
+    SystemdNspawn {
+        #[structopt(long, help = "rsync the student data")]
+        rsync: bool,
+        #[structopt(long, help = "enter without the global config")]
+        without_config: bool,
+    },
+    #[structopt(about = "enter the firejail sandbox")]
+    Firejail {
+        #[structopt(long, help = "enter without the global config")]
+        without_config: bool,
+    },
 }
 
 #[derive(StructOpt, Debug)]
@@ -126,5 +141,12 @@ pub enum SubCommand {
     Submit {
         #[structopt(long, about = "allow overriding existing submission")]
         r#override: bool
+    },
+    #[structopt(about = "clear the current project")]
+    Clear,
+    #[structopt(about = "manually enter the sandbox")]
+    EnterSandbox {
+        #[structopt(subcommand)]
+        command: Sandbox,
     },
 }
