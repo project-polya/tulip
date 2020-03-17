@@ -13,19 +13,19 @@ use serde::*;
 /// Then it will download a config file.
 ///
 ///
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub struct EnvPair {
     pub name: String,
     pub value: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Syscall {
     pub name: String,
     pub permit: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Limit {
     pub mem_limit: Option<usize>,
     // in MiB
@@ -37,13 +37,13 @@ pub struct Limit {
 
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Binding {
     pub source: PathBuf,
     pub target: PathBuf,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub struct NSpawnConfig {
     pub pid2: bool,
     pub env: Vec<EnvPair>,
@@ -65,14 +65,14 @@ pub struct NSpawnConfig {
     pub shell: Option<PathBuf>
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Timeout {
     pub hour: u8,
     pub minute: u8,
     pub second: u8,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub struct FuntionList {
     pub nou2f: bool,
     pub novideo: bool,
@@ -87,7 +87,7 @@ pub struct FuntionList {
 
 
 // deterministic-exit-code = true
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub struct FirejailConfig {
     pub timeout: Option<Timeout>,
     pub syscall: Vec<Syscall>,
@@ -103,7 +103,7 @@ pub struct FirejailConfig {
     pub with_profile: Option<PathBuf>, // relative path based on `.local/tulip/image`
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Config {
     pub systemd_nspawn: NSpawnConfig,
     pub firejail: FirejailConfig,
@@ -114,7 +114,7 @@ pub struct Config {
     pub stdin: Option<PathBuf>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 pub struct StudentConfig {
     pub student_id: String,
     pub build_shell: PathBuf,

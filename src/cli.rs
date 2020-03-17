@@ -15,6 +15,16 @@ pub enum StatusWatch {
         #[structopt(long, short, about = "remote student info")]
         id: String
     },
+    #[structopt(about = "edit current project status")]
+    EditCurrent {
+        #[structopt(short, long, env = "EDITOR", help = "the editor software", default_value = "nano")]
+        editor: String
+    },
+    #[structopt(about = "edit current global settings")]
+    EditGlobal {
+        #[structopt(short, long, env = "EDITOR", help = "the editor software", default_value = "nano")]
+        editor: String
+    }
 }
 
 #[derive(StructOpt, Debug)]
