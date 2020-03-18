@@ -2,8 +2,6 @@ use std::path::PathBuf;
 
 use serde::*;
 
-use crate::status::StudentDetail;
-
 /// By invoke `setup` the client will first drag the image.
 /// The image contains a `root.x86_64` together with other files.
 /// ```

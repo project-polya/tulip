@@ -1,6 +1,5 @@
 use std::io::{Read, Write};
 
-use prettytable::{Row, Table};
 use reqwest::Url;
 use rocksdb::DB;
 use serde::*;
@@ -22,7 +21,8 @@ pub struct StudentStatus {
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Submission {
-    //pub mark: bool, TODO: FIXME
+    pub mark: bool,
+    // TODO: FIXME
     pub graded: Option<usize>,
     pub comment: Option<String>,
     pub stdout: Option<String>,
@@ -34,7 +34,7 @@ pub struct Submission {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct StudentDetail {
     student_id: String,
-    grades: Submission,
+    grades: Option<Submission>,
     status: StudentStatus,
 }
 
@@ -52,8 +52,8 @@ pub fn student_table(data: &Vec<StudentDetail>) {
     table.add_row(row![bFb->"ID", bFr->"Grade", bFy->"Marked", bFw->"Skipped"]);
     for i in data {
         table.add_row(row![i.student_id.as_str(),
-         i.grades.graded.as_ref().map(|x|x.to_string()).unwrap_or_else(String::new).as_str(),
-         i.status.skipped.to_string().as_str(),
+         i.grades.as_ref().and_then(|x| x.graded.as_ref().map(|x|x.to_string())).unwrap_or_else(String::new).as_str(),
+         i.grades.as_ref().map(|x| x.mark.to_string()).unwrap_or_else(String::new).as_str(),
          i.status.skipped.to_string().as_str()]);
     }
 
