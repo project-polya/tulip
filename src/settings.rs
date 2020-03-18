@@ -2,6 +2,8 @@ use std::path::PathBuf;
 
 use serde::*;
 
+use crate::status::StudentDetail;
+
 /// By invoke `setup` the client will first drag the image.
 /// The image contains a `root.x86_64` together with other files.
 /// ```
@@ -55,7 +57,7 @@ pub struct NSpawnConfig {
     pub no_new_privileges: bool,
     pub no_network: bool,
     pub limit: Option<Limit>,
-    pub shell: Option<PathBuf>
+    pub shell: Option<PathBuf>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]
@@ -97,7 +99,7 @@ pub struct FirejailConfig {
     // relative path based on `.local/tulip/image`
     pub has_x: bool,
     pub env: Vec<EnvPair>,
-    pub env_remove: Vec<String>
+    pub env_remove: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]
@@ -139,7 +141,6 @@ pub struct Status {
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Submission {
-    pub built: bool,
     pub graded: Option<usize>,
     pub comment: Option<String>,
     pub mark: bool,
@@ -150,10 +151,10 @@ pub struct Submission {
     pub r#override: bool,
 }
 
+
 impl Status {
     pub fn get_submission(&self, r#override: bool) -> Submission {
         Submission {
-            built: self.built,
             graded: self.graded.clone(),
             comment: self.comment.clone(),
             mark: self.mark,

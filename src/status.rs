@@ -1,5 +1,6 @@
 use std::io::{Read, Write};
 
+use prettytable::{Row, Table};
 use reqwest::Url;
 use rocksdb::DB;
 use serde::*;
@@ -13,6 +14,52 @@ pub struct StudentList {
     students: Vec<String>
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct StudentStatus {
+    skipped: bool,
+    finished: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize, Default)]
+pub struct Submission {
+    //pub mark: bool, TODO: FIXME
+    pub graded: Option<usize>,
+    pub comment: Option<String>,
+    pub stdout: Option<String>,
+    pub stderr: Option<String>,
+    pub build_stdout: Option<String>,
+    pub build_stderr: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct StudentDetail {
+    student_id: String,
+    grades: Submission,
+    status: StudentStatus,
+}
+
+#[derive(Debug, Serialize, Deserialize, Default)]
+pub struct DetailResponse {
+    pub students: Vec<StudentDetail>
+}
+
+pub fn student_table(data: &Vec<StudentDetail>) {
+    use prettytable::*;
+    // Create the table
+    let mut table = Table::new();
+
+    // Add a row per time
+    table.add_row(row![bFb->"ID", bFr->"Grade", bFy->"Marked", bFw->"Skipped"]);
+    for i in data {
+        table.add_row(row![i.student_id.as_str(),
+         i.grades.graded.as_ref().map(|x|x.to_string()).unwrap_or_else(String::new).as_str(),
+         i.status.skipped.to_string().as_str(),
+         i.status.skipped.to_string().as_str()]);
+    }
+
+    table.printstd();
+}
+
 pub fn handle(db: &DB, command: StatusWatch) {
     match command {
         StatusWatch::Global => {
@@ -23,17 +70,32 @@ pub fn handle(db: &DB, command: StatusWatch) {
             let ans = force_get_json::<Status>(db, "status");
             println!("{:#?}", ans);
         }
-        StatusWatch::Remote => {
+        StatusWatch::Remote { detail } => {
             let server = force_get(db, "server");
             let uuid = force_get(db, "uuid");
-            let ans = reqwest::blocking::Client::new()
-                .get(format!("{}/students", server).parse::<Url>().exit_on_failure())
-                .bearer_auth(uuid)
-                .send()
-                .exit_on_failure()
-                .json::<StudentList>()
-                .exit_on_failure();
-            println!("{:#?}", ans);
+
+            let client = reqwest::blocking::Client::new();
+            if !detail {
+                let ans = client.get(format!("{}/students", server).parse::<Url>().exit_on_failure())
+                    .bearer_auth(uuid)
+                    .send()
+                    .exit_on_failure()
+                    .error_for_status()
+                    .exit_on_failure()
+                    .json::<StudentList>()
+                    .exit_on_failure();
+                println!("{:#?}", ans);
+            } else {
+                let ans = client.get(format!("{}/students?detail", server).parse::<Url>().exit_on_failure())
+                    .bearer_auth(uuid)
+                    .send()
+                    .exit_on_failure()
+                    .error_for_status()
+                    .exit_on_failure()
+                    .json::<DetailResponse>()
+                    .exit_on_failure();
+                student_table(&ans.students);
+            }
         }
         StatusWatch::RemoteID { id } => {
             let server = force_get(db, "server");
@@ -97,5 +159,18 @@ pub fn handle(db: &DB, command: StatusWatch) {
             db.put("config", serde_json::to_string(&config)
                 .exit_on_failure()).exit_on_failure();
         }
+        StatusWatch::Uuid => {
+            let uuid = force_get(db, "uuid");
+            println!("uuid: {}", uuid);
+        }
+        StatusWatch::Server { change_to } => {
+            if let Some(new) = change_to {
+                db.put("server", new).exit_on_failure();
+            } else {
+                let server = force_get(db, "server");
+                println!("server: {}", server);
+            }
+        }
     }
 }
+

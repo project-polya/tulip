@@ -9,7 +9,10 @@ pub enum StatusWatch {
     #[structopt(about = "Global configuration")]
     Global,
     #[structopt(about = "Remote student lists")]
-    Remote,
+    Remote {
+        #[structopt(long, about = "Show student detail")]
+        detail: bool,
+    },
     #[structopt(about = "Remote student info")]
     RemoteID {
         #[structopt(long, short, about = "Remote student info")]
@@ -24,6 +27,13 @@ pub enum StatusWatch {
     EditGlobal {
         #[structopt(short, long, env = "EDITOR", help = "The editor software", default_value = "nano")]
         editor: String
+    },
+    #[structopt(about = "check local uuid")]
+    Uuid,
+    #[structopt(about = "check current server")]
+    Server {
+        #[structopt(short, long, about = "edit server")]
+        change_to: Option<String>,
     },
 }
 
