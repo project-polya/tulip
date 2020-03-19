@@ -1,12 +1,13 @@
 use std::io::{Read, Write};
 
+use prettytable::*;
 use reqwest::Url;
 use rocksdb::DB;
 use serde::*;
 
 use crate::{force_get, force_get_json, LogUnwrap};
 use crate::cli::StatusWatch;
-use crate::settings::{Config, Status, StudentConfig};
+use crate::settings::*;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct StudentList {
@@ -21,7 +22,7 @@ pub struct StudentStatus {
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Submission {
-    pub mark: bool,
+    pub mark: Option<bool>,
     // TODO: FIXME
     pub graded: Option<usize>,
     pub comment: Option<String>,
@@ -43,18 +44,49 @@ pub struct DetailResponse {
     pub students: Vec<StudentDetail>
 }
 
+pub fn in_progress_table(student: &StudentConfig) -> Table {
+    let mut table = Table::new();
+    table.add_row(row![bFb->"ID", bFr->student.student_id.as_str()]);
+    table.add_row(row![bFb->"Notification", bFr->student.notification.as_str()]);
+    table.add_row(row![bFb->"Build Shell", bFr->student.build_shell.to_string_lossy()]);
+    table.add_row(row![bFb->"Run Shell", bFr->student.run_shell.to_string_lossy()]);
+    table
+}
+
+pub fn current_table(status: &Status, io_data: bool) {
+    let mut table = Table::new();
+    table.add_row(row![bFb->"Mount Point", bFr->status.mount.as_ref().map(|x|x.to_string_lossy().to_string())
+        .unwrap_or_else(||String::from("N/A"))]);
+    table.add_row(row![bFb->"Built", bFr->status.built]);
+    table.add_row(row![bFb->"Grade", bFr->status.graded.map(|x|x.to_string()).unwrap_or_else(|| String::from("N/A"))]);
+    table.add_row(row![bFb->"Comment", bFr->status.comment.clone().unwrap_or_else(String::new)]);
+    table.add_row(row![bFb->"Submitted", bFr->status.submitted]);
+    table.add_row(row![bFb->"Image Ready", bFr->status.image]);
+    table.add_row(row![bFb->"Mark", bFr->status.mark]);
+    if let Some(student) = &status.in_progress {
+        table.add_row(row![bFb->"In Progress", bFr->in_progress_table(student)]);
+    }
+    if io_data {
+        table.add_row(row![bFb->"Stdout", bFr->status.stdout.clone().unwrap_or_else(String::new)]);
+        table.add_row(row![bFb->"Stderr", bFr->status.stderr.clone().unwrap_or_else(String::new)]);
+        table.add_row(row![bFb->"Build Stdout", bFr->status.build_stdout.clone().unwrap_or_else(String::new)]);
+        table.add_row(row![bFb->"Build Stderr", bFr->status.build_stderr.clone().unwrap_or_else(String::new)]);
+    }
+    table.printstd();
+}
+
 pub fn student_table(data: &Vec<StudentDetail>) {
-    use prettytable::*;
+
     // Create the table
     let mut table = Table::new();
 
     // Add a row per time
     table.add_row(row![bFb->"ID", bFr->"Grade", bFy->"Marked", bFw->"Skipped"]);
     for i in data {
-        table.add_row(row![i.student_id.as_str(),
-         i.grades.as_ref().and_then(|x| x.graded.as_ref().map(|x|x.to_string())).unwrap_or_else(String::new).as_str(),
-         i.grades.as_ref().map(|x| x.mark.to_string()).unwrap_or_else(String::new).as_str(),
-         i.status.skipped.to_string().as_str()]);
+        table.add_row(row![i.student_id,
+         i.grades.as_ref().and_then(|x| x.graded.as_ref().map(|x|x.to_string())).unwrap_or(String::from("N/A")),
+         i.grades.as_ref().and_then(|x| x.mark).unwrap_or(false),
+         i.status.skipped]);
     }
 
     table.printstd();
@@ -64,16 +96,16 @@ pub fn handle(db: &DB, command: StatusWatch) {
     match command {
         StatusWatch::Global => {
             let ans = force_get_json::<Config>(db, "config");
-            println!("{:#?}", ans);
+            let a = to_table(&ans).exit_on_failure();
+            a.printstd();
         }
-        StatusWatch::Current => {
+        StatusWatch::Current { io_data } => {
             let ans = force_get_json::<Status>(db, "status");
-            println!("{:#?}", ans);
+            current_table(&ans, io_data);
         }
         StatusWatch::Remote { detail } => {
             let server = force_get(db, "server");
             let uuid = force_get(db, "uuid");
-
             let client = reqwest::blocking::Client::new();
             if !detail {
                 let ans = client.get(format!("{}/students", server).parse::<Url>().exit_on_failure())
@@ -84,7 +116,12 @@ pub fn handle(db: &DB, command: StatusWatch) {
                     .exit_on_failure()
                     .json::<StudentList>()
                     .exit_on_failure();
-                println!("{:#?}", ans);
+                let mut table = Table::new();
+                table.add_row(row![bFb->"Student List"]);
+                for i in ans.students {
+                    table.add_row(row![bFy->i.as_str()]);
+                }
+                table.printstd();
             } else {
                 let ans = client.get(format!("{}/students?detail", server).parse::<Url>().exit_on_failure())
                     .bearer_auth(uuid)

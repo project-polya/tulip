@@ -5,7 +5,10 @@ use structopt::*;
 #[derive(StructOpt, Debug)]
 pub enum StatusWatch {
     #[structopt(about = "Current project status")]
-    Current,
+    Current {
+        #[structopt(long, short, about = "Show IO data")]
+        io_data: bool
+    },
     #[structopt(about = "Global configuration")]
     Global,
     #[structopt(about = "Remote student lists")]

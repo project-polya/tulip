@@ -1,6 +1,11 @@
 use std::path::PathBuf;
 
+use prettytable::*
+;
 use serde::*;
+use serde::export::fmt::Display;
+use serde::ser::Error;
+use serde_json::Value;
 
 /// By invoke `setup` the client will first drag the image.
 /// The image contains a `root.x86_64` together with other files.
@@ -147,6 +152,69 @@ pub struct Submission {
     pub build_stdout: Option<String>,
     pub build_stderr: Option<String>,
     pub r#override: bool,
+}
+
+trait ToTableItem {
+    fn to_table_item(&self) -> Box<dyn Display>;
+}
+
+
+pub fn to_table<'de, T: Serialize>(s: &T) -> Result<Table, Box<impl Error>> {
+    serde_json::value::to_value(s)
+        .map_err(|x| Box::new(x))
+        .and_then(|x| {
+            match x {
+                Value::Object(e) => {
+                    let mut table = Table::new();
+                    for (x, y) in e {
+                        table.add_row(row![bFy->x, bFb->y.to_table_item()]);
+                    }
+                    Ok(table)
+                },
+                _ => Err(
+                    Box::new(Error::custom("to table can only be used to struct"))
+                )
+            }
+        })
+}
+
+
+impl<T: Display> ToTableItem for Option<T> {
+    fn to_table_item(&self) -> Box<dyn Display> {
+        match self {
+            None => Box::new("N/A"),
+            Some(e) => Box::new(e.to_string())
+        }
+    }
+}
+
+impl ToTableItem for Value {
+    fn to_table_item(&self) -> Box<dyn Display> {
+        match self {
+            Value::String(x) => Box::new(x.to_string()),
+            Value::Null => Box::new("N/A"),
+            Value::Bool(value) => Box::new(*value),
+            Value::Number(t) => Box::new(t.to_string()),
+            Value::Array(t) => {
+                if t.is_empty() {
+                    Box::new("")
+                } else {
+                    let mut table = Table::new();
+                    for i in t {
+                        table.add_row(row![i.to_table_item()]);
+                    }
+                    Box::new(table)
+                }
+            }
+            Value::Object(t) => {
+                let mut table = Table::new();
+                for (x, y) in t {
+                    table.add_row(row![bFr->x, bfg->y.to_table_item()]);
+                }
+                Box::new(table)
+            }
+        }
+    }
 }
 
 

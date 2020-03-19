@@ -193,11 +193,11 @@ pub fn build_firejail(mount_point: &Path, config: &Config, with_config: bool, wo
             .collect::<Vec<_>>().join(",");
 
         if !block.is_empty() {
-            command.arg(format!("--seccomp.block={}", block));
+            command.arg(format!("--seccomp.drop={}", block));
         }
 
         if !permit.is_empty() {
-            command.arg(format!("--seccomp={}", permit));
+            command.arg(format!("--seccomp.keep={}", permit));
         }
 
         let cap: String = firejail.capacity.join(",");

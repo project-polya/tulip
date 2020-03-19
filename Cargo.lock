@@ -1455,8 +1455,10 @@ name = "tulip"
 version = "0.1.0"
 dependencies = [
  "botan",
+ "hashbrown",
  "log",
  "mimalloc",
+ "num-traits",
  "pretty_env_logger",
  "prettytable-rs",
  "reqwest",
