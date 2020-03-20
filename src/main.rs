@@ -137,7 +137,7 @@ fn main() {
         }
         SubCommand::Status { command } => {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
-            status::handle(&db, command);
+            status::handle(&db, command, opt.tulip_dir.as_path());
         }
         SubCommand::RefreshConfig => {
             let db = init_db(opt.tulip_dir.join("meta").as_path());

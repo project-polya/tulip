@@ -42,6 +42,7 @@ pub fn handle_request(db: &DB, backend: &str, workdir: &Path, download_only: boo
             .get(format!("{}/next", server).parse::<Url>().exit_on_failure())
             .bearer_auth(uuid.as_str())
             .send()
+            .and_then(|x| x.error_for_status())
             .map_err(|x| x.to_string())
             .and_then(|x| {
                 let text = x.text().map_err(|x| x.to_string());
@@ -55,8 +56,6 @@ pub fn handle_request(db: &DB, backend: &str, workdir: &Path, download_only: boo
             std::process::exit(1);
         }
         status.in_progress.replace(new_student.student.take().unwrap());
-
-        // TODO: FIXME
     } else {
         if status.in_progress.is_none() {
             error!("current project not existing, exiting");
@@ -67,6 +66,7 @@ pub fn handle_request(db: &DB, backend: &str, workdir: &Path, download_only: boo
                 .parse::<Url>().exit_on_failure())
             .bearer_auth(uuid.as_str())
             .send()
+            .and_then(|x| x.error_for_status())
             .exit_on_failure()
             .json::<StudentConfig>()
             .exit_on_failure();
@@ -145,7 +145,7 @@ pub fn handle_request(db: &DB, backend: &str, workdir: &Path, download_only: boo
         warn!("failed to shellcheck build script: {}", e);
     };
 
-    info!("shellchecking build script");
+    info!("shellchecking run script");
 
     if let Err(e) = std::process::Command::new(shellcheck)
         .arg(student_dir.join(student.run_shell.as_path()))
@@ -154,7 +154,7 @@ pub fn handle_request(db: &DB, backend: &str, workdir: &Path, download_only: boo
         .map_err(|x| x.to_string())
         .and_then(|x| if x.success() { Ok(()) } else { Err(format!("failed with {}", x)) })
     {
-        warn!("failed to shellcheck build script: {}", e);
+        warn!("failed to shellcheck run script: {}", e);
     };
 
     info!("student information synced");
@@ -189,6 +189,7 @@ pub fn handle_submit(db: &DB, r#override: bool) {
         .bearer_auth(uuid)
         .json(&status.get_submission(r#override))
         .send()
+        .and_then(|x| x.error_for_status())
         .and_then(|x| x.json::<SubmissionResponse>())
         .map_err(|x| x.to_string())
         .and_then(|x| {
@@ -211,7 +212,7 @@ pub fn skip(db: &DB, force: bool, workdir: &Path) {
         std::process::exit(1);
     });
     let code = blocking::Client::new()
-        .put(format!("{}/student{}/skip", server, student.student_id).parse::<Url>().exit_on_failure())
+        .put(format!("{}/student/{}/skip", server, student.student_id).parse::<Url>().exit_on_failure())
         .bearer_auth(uuid)
         .send()
         .map(|x| x.status().is_success())

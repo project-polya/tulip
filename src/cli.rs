@@ -31,6 +31,20 @@ pub enum StatusWatch {
         #[structopt(short, long, env = "EDITOR", help = "The editor software", default_value = "nano")]
         editor: String
     },
+    #[structopt(about = "Edit the build script")]
+    EditBuildScript {
+        #[structopt(short, long, env = "EDITOR", help = "The editor software", default_value = "nano")]
+        editor: String,
+        #[structopt(short, long, help = "Shellcheck path", env = "SHELL_CHECK_BIN", default_value = "shellcheck")]
+        shellcheck: PathBuf,
+    },
+    #[structopt(about = "Edit the run script")]
+    EditRunScript {
+        #[structopt(short, long, env = "EDITOR", help = "The editor software", default_value = "nano")]
+        editor: String,
+        #[structopt(short, long, help = "Shellcheck path", env = "SHELL_CHECK_BIN", default_value = "shellcheck")]
+        shellcheck: PathBuf,
+    },
     #[structopt(about = "check local uuid")]
     Uuid,
     #[structopt(about = "check current server")]

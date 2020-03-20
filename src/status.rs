@@ -1,5 +1,7 @@
-use std::io::{Read, Write};
+use std::io::{Read, stdin, Write};
+use std::path::Path;
 
+use log::*;
 use prettytable::*;
 use reqwest::Url;
 use rocksdb::DB;
@@ -92,7 +94,7 @@ pub fn student_table(data: &Vec<StudentDetail>) {
     table.printstd();
 }
 
-pub fn handle(db: &DB, command: StatusWatch) {
+pub fn handle(db: &DB, command: StatusWatch, workdir: &Path) {
     match command {
         StatusWatch::Global => {
             let ans = force_get_json::<Config>(db, "config");
@@ -142,9 +144,11 @@ pub fn handle(db: &DB, command: StatusWatch) {
                 .bearer_auth(uuid)
                 .send()
                 .exit_on_failure()
+                .error_for_status()
+                .exit_on_failure()
                 .json::<StudentConfig>()
                 .exit_on_failure();
-            println!("{:#?}", ans);
+            to_table(&ans).exit_on_failure().printstd();
         }
         StatusWatch::EditCurrent { editor } => {
             let mut status = db.get("status")
@@ -208,6 +212,50 @@ pub fn handle(db: &DB, command: StatusWatch) {
                 println!("server: {}", server);
             }
         }
+        StatusWatch::EditBuildScript { editor, shellcheck } => {
+            let ans = force_get_json::<Status>(db, "status");
+            edit_script(editor.as_str(), true, shellcheck.as_path(), &ans, workdir);
+        }
+        StatusWatch::EditRunScript { editor, shellcheck } => {
+            let ans = force_get_json::<Status>(db, "status");
+            edit_script(editor.as_str(), true, shellcheck.as_path(), &ans, workdir);
+        }
     }
 }
 
+fn edit_script(editor: &str, build_or_run: bool, shellcheck: &Path, status: &Status, workdir: &Path) {
+    if status.in_progress.is_none() {
+        error!("no current project");
+        std::process::exit(1);
+    }
+    let project = status.in_progress.as_ref().unwrap();
+    let path = if build_or_run {
+        workdir.join("student").join(project.build_shell.as_path())
+    } else {
+        workdir.join("student").join(project.run_shell.as_path())
+    };
+    info!("editing {} with {}", path.display(), editor);
+    std::process::Command::new(editor)
+        .arg(path.as_path())
+        .spawn()
+        .and_then(|mut x| x.wait())
+        .map_err(|x| x.to_string())
+        .and_then(|x| if x.success() { Ok(()) } else { Err(format!("failed with {}", x)) })
+        .exit_on_failure();
+    print!("Runshell checking? [Y/n] ");
+    std::io::stdout().flush().exit_on_failure();
+    let mut line = String::new();
+    stdin().read_line(&mut line).exit_on_failure();
+    if "y" == line.trim().to_ascii_lowercase() {
+        match std::process::Command::new(shellcheck)
+            .arg(path.as_path())
+            .spawn()
+            .and_then(|mut x| x.wait())
+            .map_err(|x| x.to_string())
+            .and_then(|x| if x.success() { Ok(format!("exited with {}", x)) } else { Err(format!("failed with {}", x)) })
+        {
+            Ok(t) => { info!("{}", t) },
+            Err(t) => { error!("{}", t) },
+        }
+    }
+}
