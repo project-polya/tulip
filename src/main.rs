@@ -153,9 +153,13 @@ fn main() {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
             overlay::handle_destroy(&db, opt.tulip_dir.as_path());
         }
-        SubCommand::Fetch { backend, download_only , shellcheck} => {
+        SubCommand::Fetch { backend, download_only, shellcheck } => {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
-            student::handle_request(&db, backend.as_str(), opt.tulip_dir.as_path(), download_only, shellcheck.as_path());
+            student::handle_request(&db, backend.as_str(), opt.tulip_dir.as_path(), download_only, shellcheck.as_path(), None);
+        }
+        SubCommand::Pull { backend, id, shellcheck } => {
+            let db = init_db(opt.tulip_dir.join("meta").as_path());
+            student::pull(opt.tulip_dir.as_path(), id, &db, backend.as_str(), shellcheck.as_path());
         }
         SubCommand::Grade { score, r#override } => {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
@@ -251,7 +255,7 @@ fn main() {
                 .wait()
                 .exit_on_failure();
             info!("{}", exiting);
-        },
+        }
 
         SubCommand::Mark { remove } => {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
@@ -263,11 +267,17 @@ fn main() {
             status.mark = !remove;
             db.put("status", serde_json::to_string(&status)
                 .exit_on_failure()).exit_on_failure();
-        },
+        }
 
         SubCommand::Skip { force } => {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
             student::skip(&db, force, opt.tulip_dir.as_path());
+        }
+        SubCommand::AutoCurrent { tmp_size, mount_point, shellcheck, editor } => {
+            let db = init_db(opt.tulip_dir.join("meta").as_path());
+            student::auto_current(opt.tulip_dir.as_path(), &db, opt.nutshell.as_path(), tmp_size,
+                                  mount_point.as_path(), shellcheck.as_path(), editor.as_str(),
+            )
         }
     }
 }

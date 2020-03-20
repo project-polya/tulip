@@ -154,6 +154,26 @@ pub enum SubCommand {
         #[structopt(short, long, help = "Shellcheck path", env = "SHELL_CHECK_BIN", default_value = "shellcheck")]
         shellcheck: PathBuf,
     },
+    #[structopt(about = "Pull the target student project")]
+    Pull {
+        #[structopt(short, long, help = "backend downloader", default_value = "wget", possible_values = & ["wget", "aria2c"])]
+        backend: String,
+        #[structopt(short, long, about = "Student ID")]
+        id: String,
+        #[structopt(short, long, help = "Shellcheck path", env = "SHELL_CHECK_BIN", default_value = "shellcheck")]
+        shellcheck: PathBuf,
+    },
+    #[structopt(about = "Auto run the current project")]
+    AutoCurrent {
+        #[structopt(short, long, about = "When specified, a new tmpfs with the given size will mount in the root")]
+        tmp_size: Option<usize>,
+        #[structopt(short, long, about = "The diretory to mount the root", default_value = "/mnt")]
+        mount_point: PathBuf,
+        #[structopt(short, long, help = "Shellcheck path", env = "SHELL_CHECK_BIN", default_value = "shellcheck")]
+        shellcheck: PathBuf,
+        #[structopt(short, long, env = "EDITOR", help = "The editor software", default_value = "nano")]
+        editor: String
+    },
     #[structopt(about = "Build the current project")]
     Build {
         #[structopt(long, about = "Rebuild the project")]

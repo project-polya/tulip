@@ -8,6 +8,7 @@ use serde::*;
 
 use crate::{clear_status, force_get, force_get_json, LogUnwrap};
 use crate::settings::{Status, StudentConfig};
+use crate::cli::StatusWatch;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct StudentConfigResponse {
@@ -15,10 +16,14 @@ pub struct StudentConfigResponse {
     failure: Option<String>,
 }
 
-pub fn handle_request(db: &DB, backend: &str, workdir: &Path, download_only: bool, shellcheck: &Path) {
+pub fn handle_request(db: &DB, backend: &str, workdir: &Path, download_only: bool, shellcheck: &Path, id: Option<String>) {
     let server = force_get(db, "server");
     let uuid = force_get(db, "uuid");
     let mut status = force_get_json::<Status>(db, "status");
+    if let Some(t) = id {
+        clear_status(db, &mut status, workdir);
+        status.in_progress.as_mut().unwrap().student_id = t;
+    }
     if !download_only {
         if !status.submitted && status.in_progress.is_some() {
             error!("current project not submitted, exiting");
@@ -55,6 +60,7 @@ pub fn handle_request(db: &DB, backend: &str, workdir: &Path, download_only: boo
             error!("failed to get next student: {}", f);
             std::process::exit(1);
         }
+        clear_status(db, &mut status, workdir);
         status.in_progress.replace(new_student.student.take().unwrap());
     } else {
         if status.in_progress.is_none() {
@@ -70,14 +76,10 @@ pub fn handle_request(db: &DB, backend: &str, workdir: &Path, download_only: boo
             .exit_on_failure()
             .json::<StudentConfig>()
             .exit_on_failure();
+        clear_status(db, &mut status, workdir);
         status.in_progress.replace(ans);
     }
     db.put("status", serde_json::to_vec(&status).exit_on_failure()).exit_on_failure();
-    crate::overlay::handle_destroy(db, workdir);
-    match std::fs::remove_dir_all(workdir.join("student")) {
-        Ok(()) => info!("student dir deleted!"),
-        Err(e) => error!("failed to delete student dir: {}", e)
-    };
     let auth = format!("Authorization: Bearer {}", uuid.as_str());
     let student = status.in_progress.as_ref().unwrap();
     match backend {
@@ -225,4 +227,139 @@ pub fn skip(db: &DB, force: bool, workdir: &Path) {
         std::process::exit(1);
     }
     clear_status(db, &mut status, workdir);
+}
+
+pub fn pull(workdir: &Path, id: String, db: &DB, backend: &str, shellcheck: &Path) {
+    let status = force_get_json::<Status>(db, "status");
+    if status.in_progress.is_some() && !status.submitted {
+        error!("current project is not submitted");
+        std::process::exit(1);
+    }
+    handle_request(db, backend, workdir, true, shellcheck, Some(id));
+}
+
+pub fn auto_current(workdir: &Path, db: &DB, nutshell: &Path, tmp_size: Option<usize>, mount_point: &Path, shellcheck: &Path, editor: &str) {
+    let mut status = force_get_json::<Status>(db, "status");
+    if status.in_progress.is_none() {
+        error!("No current project");
+        std::process::exit(1);
+    }
+    if !status.image {
+        error!("No current image");
+        std::process::exit(1);
+    }
+    let mut mount = true;
+    if status.mount.is_some() {
+        let mut result = String::new();
+        print!("Already mount, re-init the overlay? [Y/n] ");
+        std::io::stdout().flush().exit_on_failure();
+        std::io::stdin().read_line(&mut result).exit_on_failure();
+        mount = "y" == result.trim().to_ascii_lowercase();
+        if mount {
+            crate::overlay::handle_destroy(db, workdir);
+        }
+    }
+    if mount {
+        crate::overlay::handle(
+            db, workdir, nutshell, false, false, mount_point, tmp_size, false
+        );
+    }
+    status = force_get_json::<Status>(db, "status");
+    info!("overlay intialized");
+
+    {
+        let mut result = String::new();
+        print!("Enter the current overlay? [Y/n] ");
+        std::io::stdout().flush().exit_on_failure();
+        std::io::stdin().read_line(&mut result).exit_on_failure();
+        if "y" == result.trim().to_ascii_lowercase() {
+            let code = crate::build::build_nspawn(db, &status, workdir, false, false)
+                .spawn()
+                .exit_on_failure()
+                .wait()
+                .exit_on_failure();
+            info!("nspawn {}", code);
+        }
+    }
+
+    {
+        let mut result = String::new();
+        print!("View the build script? [Y/n] ");
+        std::io::stdout().flush().exit_on_failure();
+        std::io::stdin().read_line(&mut result).exit_on_failure();
+        if "y" == result.trim().to_ascii_lowercase() {
+            crate::status::handle(db, StatusWatch::EditBuildScript {
+                editor: editor.to_string(),
+                shellcheck: shellcheck.to_path_buf()
+            }, workdir);
+        }
+    }
+
+    let mut build = true;
+    if status.built {
+        let mut result = String::new();
+        print!("Already build, re-build? [Y/n] ");
+        std::io::stdout().flush().exit_on_failure();
+        std::io::stdin().read_line(&mut result).exit_on_failure();
+        build = "y" == result.trim().to_ascii_lowercase();
+    }
+
+    if build {
+        crate::build::handle(db, true, workdir);
+    }
+
+    {
+        let mut result = String::new();
+        print!("Enter the sandboxed overlay? [Y/n] ");
+        std::io::stdout().flush().exit_on_failure();
+        std::io::stdin().read_line(&mut result).exit_on_failure();
+        if "y" == result.trim().to_ascii_lowercase() {
+            let code = crate::build::build_nspawn(db, &status, workdir, false, true)
+                .spawn()
+                .exit_on_failure()
+                .wait()
+                .exit_on_failure();
+            info!("nspawn {}", code);
+        }
+    }
+
+    {
+        let mut result = String::new();
+        print!("View the run script? [Y/n] ");
+        std::io::stdout().flush().exit_on_failure();
+        std::io::stdin().read_line(&mut result).exit_on_failure();
+        if "y" == result.trim().to_ascii_lowercase() {
+            crate::status::handle(db, StatusWatch::EditRunScript {
+                editor: editor.to_string(),
+                shellcheck: shellcheck.to_path_buf()
+            }, workdir);
+        }
+    }
+
+    {
+        let mut result = String::new();
+        print!("Start running? [Y/n] ");
+        std::io::stdout().flush().exit_on_failure();
+        std::io::stdin().read_line(&mut result).exit_on_failure();
+        if "y" == result.trim().to_ascii_lowercase() {
+            crate::run::run(db, workdir, false);
+        }
+    }
+
+    {
+        let mut result = String::new();
+        print!("Enter the firejailed overlay? [Y/n] ");
+        std::io::stdout().flush().exit_on_failure();
+        std::io::stdin().read_line(&mut result).exit_on_failure();
+        if "y" == result.trim().to_ascii_lowercase() {
+            let config = force_get_json(db, "config");
+            let code = crate::run::build_firejail(mount_point, &config, true, workdir)
+                .spawn()
+                .exit_on_failure()
+                .wait()
+                .exit_on_failure();
+            info!("nspawn {}", code);
+        }
+    }
+
 }

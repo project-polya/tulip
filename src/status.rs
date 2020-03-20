@@ -218,7 +218,7 @@ pub fn handle(db: &DB, command: StatusWatch, workdir: &Path) {
         }
         StatusWatch::EditRunScript { editor, shellcheck } => {
             let ans = force_get_json::<Status>(db, "status");
-            edit_script(editor.as_str(), true, shellcheck.as_path(), &ans, workdir);
+            edit_script(editor.as_str(), false, shellcheck.as_path(), &ans, workdir);
         }
     }
 }
