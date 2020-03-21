@@ -92,6 +92,7 @@ pub struct FirejailConfig {
     pub has_x: bool,
     pub env: Vec<EnvPair>,
     pub env_remove: Vec<String>,
+    pub whilelist: Vec<PathBuf>
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]
@@ -100,11 +101,7 @@ pub struct Config {
     pub firejail: FirejailConfig,
     pub notification: String,
     pub max_grade: usize,
-    pub stdin: Option<PathBuf>,
-    pub extra_bind: Vec<Binding>,
-    pub extra_bind_ro: Vec<Binding>,
-    pub extra_overlay: Vec<Binding>,
-    pub extra_overlay_ro: Vec<Binding>,
+    pub stdin: Option<PathBuf>
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]

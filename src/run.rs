@@ -259,14 +259,10 @@ pub fn build_firejail(mount_point: &Path, config: &Config, with_config: bool, wo
                 .wait()
                 .exit_on_failure();
         }
-    }
 
-    for i in &config.extra_bind {
-        command.arg(format!("--whitelist={}", mount_point.join(i.target.as_path()).display()));
-    }
-
-    for i in &config.extra_overlay {
-        command.arg(format!("--whitelist=/{}", mount_point.join(i.target.as_path()).display()));
+        for i in &firejail.whilelist {
+            command.arg(format!("--whitelist={}", mount_point.join(i).display()));
+        }
     }
 
     command.arg(format!("--whitelist={}", mount_point.join("data").display()));

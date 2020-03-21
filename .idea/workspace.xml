@@ -14,6 +14,7 @@
   <component name="ChangeListManager">
     <list default="true" id="49ea88d2-b9e9-4f92-b64d-0b14443f8782" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/overlay.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/overlay.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/run.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/run.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/settings.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/settings.rs" afterDir="false" />
     </list>
@@ -151,7 +152,7 @@
       <workItem from="1584719355811" duration="1471000" />
       <workItem from="1584780609012" duration="511000" />
       <workItem from="1584781612095" duration="3034000" />
-      <workItem from="1584790177236" duration="2347000" />
+      <workItem from="1584790177236" duration="2694000" />
     </task>
     <task id="LOCAL-00001" summary="initial commit">
       <created>1584200908957</created>
@@ -314,7 +315,14 @@
       <option name="project" value="LOCAL" />
       <updated>1584792865943</updated>
     </task>
-    <option name="localTasksCounter" value="24" />
+    <task id="LOCAL-00024" summary="add allow debuggers">
+      <created>1584793064069</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1584793064069</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -344,7 +352,8 @@
     <MESSAGE value="tablization" />
     <MESSAGE value="cli improvements" />
     <MESSAGE value="add report" />
-    <option name="LAST_COMMIT_MESSAGE" value="add report" />
+    <MESSAGE value="add allow debuggers" />
+    <option name="LAST_COMMIT_MESSAGE" value="add allow debuggers" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
@@ -359,39 +368,39 @@
     </state>
     <state x="755" y="180" key="#com.intellij.ide.util.MemberChooser/0.0.1920.1037@0.0.1920.1037" timestamp="1584190261636" />
     <state x="1510" y="375" key="#com.intellij.ide.util.MemberChooser/0.0.3840.2160@0.0.3840.2160" timestamp="1584592919374" />
-    <state x="497" y="60" key="CommitChangelistDialog2" timestamp="1584792865600">
+    <state x="497" y="60" key="CommitChangelistDialog2" timestamp="1584793063982">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state x="497" y="57" key="CommitChangelistDialog2/0.0.1920.1037@0.0.1920.1037" timestamp="1584551206614" />
-    <state x="497" y="60" key="CommitChangelistDialog2/0.0.1920.1080@0.0.1920.1080" timestamp="1584792865600" />
+    <state x="497" y="60" key="CommitChangelistDialog2/0.0.1920.1080@0.0.1920.1080" timestamp="1584793063982" />
     <state x="994" y="119" key="CommitChangelistDialog2/0.0.3840.2160@0.0.3840.2160" timestamp="1584597912117" />
     <state x="808" y="250" key="Github.ShareDialog" timestamp="1584200932951">
       <screen x="0" y="0" width="1920" height="1037" />
     </state>
     <state x="808" y="250" key="Github.ShareDialog/0.0.1920.1037@0.0.1920.1037" timestamp="1584200932951" />
-    <state width="1434" height="434" key="GridCell.Tab.0.bottom" timestamp="1584793030372">
+    <state width="1432" height="434" key="GridCell.Tab.0.bottom" timestamp="1584793361087">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state width="1436" height="350" key="GridCell.Tab.0.bottom/0.0.1920.1037@0.0.1920.1037" timestamp="1584551110794" />
-    <state width="1434" height="434" key="GridCell.Tab.0.bottom/0.0.1920.1080@0.0.1920.1080" timestamp="1584793030372" />
+    <state width="1432" height="434" key="GridCell.Tab.0.bottom/0.0.1920.1080@0.0.1920.1080" timestamp="1584793361087" />
     <state width="1940" height="717" key="GridCell.Tab.0.bottom/0.0.3840.2160@0.0.3840.2160" timestamp="1584597280736" />
-    <state width="1434" height="434" key="GridCell.Tab.0.center" timestamp="1584793030372">
+    <state width="1432" height="434" key="GridCell.Tab.0.center" timestamp="1584793361087">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state width="1436" height="350" key="GridCell.Tab.0.center/0.0.1920.1037@0.0.1920.1037" timestamp="1584551110794" />
-    <state width="1434" height="434" key="GridCell.Tab.0.center/0.0.1920.1080@0.0.1920.1080" timestamp="1584793030372" />
+    <state width="1432" height="434" key="GridCell.Tab.0.center/0.0.1920.1080@0.0.1920.1080" timestamp="1584793361087" />
     <state width="1940" height="717" key="GridCell.Tab.0.center/0.0.3840.2160@0.0.3840.2160" timestamp="1584597280736" />
-    <state width="1434" height="434" key="GridCell.Tab.0.left" timestamp="1584793030372">
+    <state width="1432" height="434" key="GridCell.Tab.0.left" timestamp="1584793361087">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state width="1436" height="350" key="GridCell.Tab.0.left/0.0.1920.1037@0.0.1920.1037" timestamp="1584551110794" />
-    <state width="1434" height="434" key="GridCell.Tab.0.left/0.0.1920.1080@0.0.1920.1080" timestamp="1584793030372" />
+    <state width="1432" height="434" key="GridCell.Tab.0.left/0.0.1920.1080@0.0.1920.1080" timestamp="1584793361087" />
     <state width="1940" height="717" key="GridCell.Tab.0.left/0.0.3840.2160@0.0.3840.2160" timestamp="1584597280735" />
-    <state width="1434" height="434" key="GridCell.Tab.0.right" timestamp="1584793030372">
+    <state width="1432" height="434" key="GridCell.Tab.0.right" timestamp="1584793361087">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state width="1436" height="350" key="GridCell.Tab.0.right/0.0.1920.1037@0.0.1920.1037" timestamp="1584551110794" />
-    <state width="1434" height="434" key="GridCell.Tab.0.right/0.0.1920.1080@0.0.1920.1080" timestamp="1584793030372" />
+    <state width="1432" height="434" key="GridCell.Tab.0.right/0.0.1920.1080@0.0.1920.1080" timestamp="1584793361087" />
     <state width="1940" height="717" key="GridCell.Tab.0.right/0.0.3840.2160@0.0.3840.2160" timestamp="1584597280736" />
     <state x="0" y="0" key="SettingsEditor" timestamp="1584667776286">
       <screen x="0" y="0" width="1920" height="1080" />
