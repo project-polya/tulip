@@ -18,7 +18,7 @@ reqwest = { version = "0.10", features = ["blocking", "json"] }
 serde = { version = "1", features = ["derive"] }
 uuid = { version = "0.8", features = ["v4"] }
 rust-argon2 = "0.8"
-botan = "0.6"
+ring = "0.16"
 prettytable-rs = "0.8"
 tempfile = "3"
 hashbrown = "0.7"

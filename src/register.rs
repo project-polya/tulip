@@ -2,6 +2,7 @@ use std::path::Path;
 
 use log::*;
 use reqwest::Url;
+use ring::rand::SecureRandom;
 use rocksdb::DB;
 use serde::*;
 
@@ -30,11 +31,7 @@ pub fn handle(tulip_dir: &Path, server: &str, token: &str, db: &DB, force: bool)
         }
     }
     let mut seed = [0u8; 16];
-    botan::RandomNumberGenerator::new().and_then(|x| x.fill(&mut seed))
-        .unwrap_or_else(|e| {
-            error!("{:?}", e);
-            std::process::exit(1)
-        });
+    ring::rand::SystemRandom::new().fill(&mut seed).exit_on_failure();
     let config = argon2::Config::default();
     let hash = argon2::hash_encoded(token.as_bytes(), &seed, &config).exit_on_failure();
     let register = reqwest::blocking::Client::new()
