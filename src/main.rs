@@ -273,11 +273,15 @@ fn main() {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
             student::skip(&db, force, opt.tulip_dir.as_path());
         }
-        SubCommand::AutoCurrent { tmp_size, mount_point, shellcheck, editor } => {
+        SubCommand::AutoCurrent { tmp_size, mount_point, shellcheck, editor, reader } => {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
             student::auto_current(opt.tulip_dir.as_path(), &db, opt.nutshell.as_path(), tmp_size,
-                                  mount_point.as_path(), shellcheck.as_path(), editor.as_str(),
+                                  mount_point.as_path(), shellcheck.as_path(), editor.as_str(), reader.as_path(),
             )
+        }
+        SubCommand::Report { reader } => {
+            let db = init_db(opt.tulip_dir.join("meta").as_path());
+            student::report(&db, reader.as_path(), opt.tulip_dir.as_path());
         }
     }
 }

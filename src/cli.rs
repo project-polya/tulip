@@ -13,7 +13,7 @@ pub enum StatusWatch {
     Global,
     #[structopt(about = "Remote student lists")]
     Remote {
-        #[structopt(long, about = "Show student detail")]
+        #[structopt(short, long, about = "Show student detail")]
         detail: bool,
     },
     #[structopt(about = "Remote student info")]
@@ -172,7 +172,9 @@ pub enum SubCommand {
         #[structopt(short, long, help = "Shellcheck path", env = "SHELL_CHECK_BIN", default_value = "shellcheck")]
         shellcheck: PathBuf,
         #[structopt(short, long, env = "EDITOR", help = "The editor software", default_value = "nano")]
-        editor: String
+        editor: String,
+        #[structopt(short, long, help = "Reader path", env = "TULIP_REPORT_READER", default_value = "xdg-open")]
+        reader: PathBuf,
     },
     #[structopt(about = "Build the current project")]
     Build {
@@ -208,6 +210,11 @@ pub enum SubCommand {
     Skip {
         #[structopt(long, about = "Force skipping even without a proper response from the server")]
         force: bool,
+    },
+    #[structopt(about = "Read the report")]
+    Report {
+        #[structopt(short, long, help = "Reader path", env = "TULIP_REPORT_READER", default_value = "xdg-open")]
+        reader: PathBuf,
     },
 
 }

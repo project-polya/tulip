@@ -7,8 +7,8 @@ use rocksdb::DB;
 use serde::*;
 
 use crate::{clear_status, force_get, force_get_json, LogUnwrap};
-use crate::settings::{Status, StudentConfig};
 use crate::cli::StatusWatch;
+use crate::settings::{Status, StudentConfig, to_table};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct StudentConfigResponse {
@@ -22,6 +22,7 @@ pub fn handle_request(db: &DB, backend: &str, workdir: &Path, download_only: boo
     let mut status = force_get_json::<Status>(db, "status");
     if let Some(t) = id {
         clear_status(db, &mut status, workdir);
+        status.in_progress.replace(StudentConfig::default());
         status.in_progress.as_mut().unwrap().student_id = t;
     }
     if !download_only {
@@ -171,6 +172,15 @@ struct SubmissionResponse {
     failure: Option<String>
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+struct InProgressShow<'a> {
+    student_id: &'a str,
+    comment: Option<&'a str>,
+    built: bool,
+    mark: bool,
+    graded: Option<usize>,
+}
+
 pub fn handle_submit(db: &DB, r#override: bool) {
     let server = force_get(db, "server");
     let uuid = force_get(db, "uuid");
@@ -179,12 +189,20 @@ pub fn handle_submit(db: &DB, r#override: bool) {
         println!("no current project");
         std::process::exit(1);
     }
-    println!("status: {}", serde_json::to_string_pretty(&status).exit_on_failure());
+    let in_progess = status.in_progress.as_ref().unwrap();
+    let show = InProgressShow {
+        student_id: in_progess.student_id.as_str().clone(),
+        comment: status.comment.as_ref().map(|x| x.as_str()),
+        built: status.built,
+        mark: status.mark,
+        graded: status.graded,
+    };
+    to_table(&show).exit_on_failure().printstd();
     print!("Are you sure to submit? [Y/n] ");
     stdout().flush().exit_on_failure();
     let mut buffer = String::new();
     std::io::stdin().read_line(&mut buffer).exit_on_failure();
-    if "y" != buffer.trim() && "Y" != buffer.trim() { return; }
+    if "y" != buffer.trim().to_ascii_lowercase() { return; }
     blocking::Client::new()
         .put(format!("{}/student/{}/grades", server,
                      status.in_progress.as_ref().unwrap().student_id).parse::<Url>().exit_on_failure())
@@ -238,7 +256,7 @@ pub fn pull(workdir: &Path, id: String, db: &DB, backend: &str, shellcheck: &Pat
     handle_request(db, backend, workdir, true, shellcheck, Some(id));
 }
 
-pub fn auto_current(workdir: &Path, db: &DB, nutshell: &Path, tmp_size: Option<usize>, mount_point: &Path, shellcheck: &Path, editor: &str) {
+pub fn auto_current(workdir: &Path, db: &DB, nutshell: &Path, tmp_size: Option<usize>, mount_point: &Path, shellcheck: &Path, editor: &str, reader: &Path) {
     let mut status = force_get_json::<Status>(db, "status");
     if status.in_progress.is_none() {
         error!("No current project");
@@ -247,6 +265,15 @@ pub fn auto_current(workdir: &Path, db: &DB, nutshell: &Path, tmp_size: Option<u
     if !status.image {
         error!("No current image");
         std::process::exit(1);
+    }
+    if status.in_progress.as_ref().and_then(|x| x.report.as_ref()).is_some() {
+        let mut result = String::new();
+        print!("This student has report, open it? [Y/n] ");
+        std::io::stdout().flush().exit_on_failure();
+        std::io::stdin().read_line(&mut result).exit_on_failure();
+        if "y" == result.trim().to_ascii_lowercase() {
+            report(db, reader, workdir);
+        }
     }
     let mut mount = true;
     if status.mount.is_some() {
@@ -261,7 +288,7 @@ pub fn auto_current(workdir: &Path, db: &DB, nutshell: &Path, tmp_size: Option<u
     }
     if mount {
         crate::overlay::handle(
-            db, workdir, nutshell, false, false, mount_point, tmp_size, false
+            db, workdir, nutshell, false, false, mount_point, tmp_size, false,
         );
     }
     status = force_get_json::<Status>(db, "status");
@@ -290,7 +317,7 @@ pub fn auto_current(workdir: &Path, db: &DB, nutshell: &Path, tmp_size: Option<u
         if "y" == result.trim().to_ascii_lowercase() {
             crate::status::handle(db, StatusWatch::EditBuildScript {
                 editor: editor.to_string(),
-                shellcheck: shellcheck.to_path_buf()
+                shellcheck: shellcheck.to_path_buf(),
             }, workdir);
         }
     }
@@ -331,7 +358,7 @@ pub fn auto_current(workdir: &Path, db: &DB, nutshell: &Path, tmp_size: Option<u
         if "y" == result.trim().to_ascii_lowercase() {
             crate::status::handle(db, StatusWatch::EditRunScript {
                 editor: editor.to_string(),
-                shellcheck: shellcheck.to_path_buf()
+                shellcheck: shellcheck.to_path_buf(),
             }, workdir);
         }
     }
@@ -361,5 +388,26 @@ pub fn auto_current(workdir: &Path, db: &DB, nutshell: &Path, tmp_size: Option<u
             info!("nspawn {}", code);
         }
     }
+}
 
+pub fn report(db: &DB, reader: &Path, workdir: &Path) {
+    let status = force_get_json::<Status>(db, "status");
+    if status.in_progress.is_none() {
+        error!("no current project");
+        std::process::exit(1);
+    }
+    let student = status.in_progress.as_ref().unwrap();
+    if student.report.is_none() {
+        error!("This student has no report");
+        std::process::exit(1);
+    }
+    let report = student.report.as_ref().unwrap();
+    std::process::Command::new("firejail")
+        .arg("--overlay-tmpfs")
+        .arg(reader)
+        .arg(workdir.join("student").join(report))
+        .spawn()
+        .exit_on_failure()
+        .wait()
+        .exit_on_failure();
 }

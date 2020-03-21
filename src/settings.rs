@@ -1,12 +1,10 @@
 use std::path::PathBuf;
 
-use prettytable::*
-;
+use prettytable::*;
 use serde::*;
 use serde::export::fmt::Display;
 use serde::ser::Error;
 use serde_json::Value;
-
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct EnvPair {
@@ -114,6 +112,7 @@ pub struct StudentConfig {
     pub build_shell: PathBuf,
     pub run_shell: PathBuf,
     pub notification: String,
+    pub report: Option<PathBuf>
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]
