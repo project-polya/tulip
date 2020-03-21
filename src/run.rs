@@ -212,7 +212,9 @@ pub fn build_firejail(mount_point: &Path, config: &Config, with_config: bool, wo
             command.arg(format!("--caps.drop={}", permit));
         }
 
-
+        if firejail.allow_debuggers {
+            command.arg("--allow-debuggers");
+        }
         if firejail.function.no3d {
             command.arg("--no3d");
         }

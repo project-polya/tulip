@@ -83,6 +83,7 @@ pub struct FirejailConfig {
     pub mac: Option<String>,
     pub dns: Option<Vec<String>>,
     pub nodefault: bool,
+    pub allow_debuggers: bool,
     pub limit: Option<Limit>,
     pub capacity: Vec<String>,
     pub capacity_drop: Vec<String>,
