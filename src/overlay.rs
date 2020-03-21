@@ -97,7 +97,7 @@ pub fn handle(db: &DB, workdir: &Path, nutshell: &Path, print_result: bool, shel
         .arg("-d")
         .arg(workdir.join("data").canonicalize().exit_on_failure())
         .arg("-b")
-        .arg(workdir.join("image/root.x86_64").canonicalize().exit_on_failure());
+        .arg(workdir.join("image/image.sfs").canonicalize().exit_on_failure());
     if let Some(size) = tmp_size {
         command.arg("-t").arg(format!("{}m", size));
     }
@@ -149,6 +149,16 @@ pub fn handle_destroy(db: &DB, workdir: &Path) {
     if let Some(mount) = &status.mount {
         info!("trying to umount {}", mount.display());
         let umount = std::process::Command::new("sudo").arg("-k")
+            .arg("umount")
+            .arg("-R")
+            .arg(mount)
+            .spawn()
+            .and_then(|mut x| x.wait());
+        match umount {
+            Ok(e) => info!("umount exit with {}", e),
+            Err(e) => error!("umount failed with {}", e)
+        }
+        let umount = std::process::Command::new("sudo")
             .arg("umount")
             .arg("-R")
             .arg(mount)

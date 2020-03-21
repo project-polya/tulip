@@ -1,0 +1,418 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
+    <generated />
+  </component>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+  <component name="CargoProjects">
+    <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="49ea88d2-b9e9-4f92-b64d-0b14443f8782" name="Default Changelist" comment="cli improvements">
+      <change beforePath="$PROJECT_DIR$/src/overlay.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/overlay.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pull_image.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/pull_image.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/settings.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/settings.rs" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IgnoredFileRootStore">
+    <option name="generatedRoots">
+      <set>
+        <option value="$PROJECT_DIR$/.idea" />
+      </set>
+    </option>
+  </component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="gkAznEEV" />
+  </component>
+  <component name="ProjectId" id="1Z3xHBMCxcsCNwSVi1cvpbq9431" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="org.rust.cargo.project.model.PROJECT_DISCOVERY" value="true" />
+    <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
+  </component>
+  <component name="RunManager" selected="Cargo Command.Run tulip">
+    <configuration name="Run tulip" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="channel" value="DEFAULT" />
+      <option name="command" value="run --package tulip --bin tulip" />
+      <option name="allFeatures" value="false" />
+      <option name="nocapture" value="false" />
+      <option name="emulateTerminal" value="false" />
+      <option name="backtrace" value="SHORT" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <envs />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Test overlay::test::test" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="channel" value="DEFAULT" />
+      <option name="command" value="test --package tulip --bin tulip overlay::test::test -- --exact" />
+      <option name="allFeatures" value="false" />
+      <option name="nocapture" value="false" />
+      <option name="emulateTerminal" value="false" />
+      <option name="backtrace" value="SHORT" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <envs />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Test status::test::test" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="channel" value="DEFAULT" />
+      <option name="command" value="test --package tulip --bin tulip status::test::test -- --exact" />
+      <option name="allFeatures" value="false" />
+      <option name="nocapture" value="false" />
+      <option name="emulateTerminal" value="false" />
+      <option name="backtrace" value="SHORT" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <envs />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Cargo Command.Run tulip" />
+        <item itemvalue="Cargo Command.Test status::test::test" />
+        <item itemvalue="Cargo Command.Test overlay::test::test" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="RustProjectSettings">
+    <option name="macroExpansionEngine" value="NEW" />
+    <option name="toolchainHomeDirectory" value="/usr/bin" />
+    <option name="version" value="2" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="49ea88d2-b9e9-4f92-b64d-0b14443f8782" name="Default Changelist" comment="" />
+      <created>1584081488972</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1584081488972</updated>
+      <workItem from="1584081490457" duration="1879000" />
+      <workItem from="1584084568635" duration="485000" />
+      <workItem from="1584152992384" duration="4105000" />
+      <workItem from="1584169803369" duration="10000" />
+      <workItem from="1584177175248" duration="45000" />
+      <workItem from="1584178542379" duration="18841000" />
+      <workItem from="1584237595075" duration="38827000" />
+      <workItem from="1584335818673" duration="863000" />
+      <workItem from="1584363168103" duration="16001000" />
+      <workItem from="1584404507714" duration="4406000" />
+      <workItem from="1584416639622" duration="4358000" />
+      <workItem from="1584423106995" duration="1932000" />
+      <workItem from="1584428292133" duration="8000" />
+      <workItem from="1584438990649" duration="10648000" />
+      <workItem from="1584460380021" duration="608000" />
+      <workItem from="1584491044216" duration="1409000" />
+      <workItem from="1584540785071" duration="525000" />
+      <workItem from="1584542174601" duration="2308000" />
+      <workItem from="1584544979980" duration="1684000" />
+      <workItem from="1584546926456" duration="1412000" />
+      <workItem from="1584549122369" duration="1956000" />
+      <workItem from="1584579503035" duration="627000" />
+      <workItem from="1584585687003" duration="12000" />
+      <workItem from="1584586212807" duration="13000" />
+      <workItem from="1584586527777" duration="662000" />
+      <workItem from="1584590418999" duration="6734000" />
+      <workItem from="1584597866148" duration="791000" />
+      <workItem from="1584600799903" duration="286000" />
+      <workItem from="1584620778173" duration="26000" />
+      <workItem from="1584667748018" duration="76000" />
+      <workItem from="1584676282463" duration="5219000" />
+      <workItem from="1584710481169" duration="4321000" />
+      <workItem from="1584715066636" duration="6000" />
+      <workItem from="1584715098343" duration="1937000" />
+      <workItem from="1584718225624" duration="603000" />
+      <workItem from="1584719355811" duration="1471000" />
+      <workItem from="1584780609012" duration="511000" />
+    </task>
+    <task id="LOCAL-00001" summary="initial commit">
+      <created>1584200908957</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1584200908958</updated>
+    </task>
+    <task id="LOCAL-00002" summary="initial commit">
+      <created>1584242181027</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1584242181027</updated>
+    </task>
+    <task id="LOCAL-00003" summary="update status on finished">
+      <created>1584242541319</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1584242541319</updated>
+    </task>
+    <task id="LOCAL-00004" summary="add nutshell part">
+      <created>1584249557691</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1584249557691</updated>
+    </task>
+    <task id="LOCAL-00005" summary="destroy overlay">
+      <created>1584255122585</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1584255122585</updated>
+    </task>
+    <task id="LOCAL-00006" summary="destroy overlay">
+      <created>1584260151197</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1584260151197</updated>
+    </task>
+    <task id="LOCAL-00007" summary="fix err">
+      <created>1584267284939</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1584267284939</updated>
+    </task>
+    <task id="LOCAL-00008" summary="more on cli">
+      <created>1584273014277</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1584273014277</updated>
+    </task>
+    <task id="LOCAL-00009" summary="format the world">
+      <created>1584336017227</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1584336017228</updated>
+    </task>
+    <task id="LOCAL-00010" summary="run">
+      <created>1584377960331</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1584377960332</updated>
+    </task>
+    <task id="LOCAL-00011" summary="improve experience">
+      <created>1584379859484</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1584379859484</updated>
+    </task>
+    <task id="LOCAL-00012" summary="update capturing">
+      <created>1584404766525</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1584404766525</updated>
+    </task>
+    <task id="LOCAL-00013" summary="add local customization">
+      <created>1584405955707</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1584405955707</updated>
+    </task>
+    <task id="LOCAL-00014" summary="adjust settings">
+      <created>1584408911162</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1584408911162</updated>
+    </task>
+    <task id="LOCAL-00015" summary="basic submit">
+      <created>1584422999594</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1584422999594</updated>
+    </task>
+    <task id="LOCAL-00016" summary="allocator and small update">
+      <created>1584424764944</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1584424764945</updated>
+    </task>
+    <task id="LOCAL-00017" summary="enter sandbox">
+      <created>1584448700279</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1584448700279</updated>
+    </task>
+    <task id="LOCAL-00018" summary="CLI improve&#10;&#10;- fix IO capture&#10;- add skip">
+      <created>1584453343763</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1584453343763</updated>
+    </task>
+    <task id="LOCAL-00019" summary="CLI improve&#10;&#10;- keep image&#10;- more failure log">
+      <created>1584455209764</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1584455209764</updated>
+    </task>
+    <task id="LOCAL-00020" summary="info query">
+      <created>1584550648898</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1584550648898</updated>
+    </task>
+    <task id="LOCAL-00021" summary="tablization">
+      <created>1584597912224</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1584597912224</updated>
+    </task>
+    <task id="LOCAL-00022" summary="cli improvements">
+      <created>1584681311429</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1584681311429</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
+    <option name="CHECK_NEW_TODO" value="false" />
+    <MESSAGE value="initial commit" />
+    <MESSAGE value="update status on finished" />
+    <MESSAGE value="add nutshell part" />
+    <MESSAGE value="destroy overlay" />
+    <MESSAGE value="fix err" />
+    <MESSAGE value="more on cli" />
+    <MESSAGE value="format the world" />
+    <MESSAGE value="run" />
+    <MESSAGE value="improve experience" />
+    <MESSAGE value="update capturing" />
+    <MESSAGE value="add local customization" />
+    <MESSAGE value="adjust settings" />
+    <MESSAGE value="basic submit" />
+    <MESSAGE value="allocator and small update" />
+    <MESSAGE value="enter sandbox" />
+    <MESSAGE value="CLI improve&#10;&#10;- fix IO capture&#10;- add skip" />
+    <MESSAGE value="CLI improve&#10;&#10;- keep image&#10;- more failure log" />
+    <MESSAGE value="info query" />
+    <MESSAGE value="tablization" />
+    <MESSAGE value="cli improvements" />
+    <option name="LAST_COMMIT_MESSAGE" value="cli improvements" />
+    <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
+    <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
+    <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="554" y="130" key="#Deployment" timestamp="1584191123245">
+      <screen x="0" y="0" width="1920" height="1037" />
+    </state>
+    <state x="554" y="130" key="#Deployment/0.0.1920.1037@0.0.1920.1037" timestamp="1584191123245" />
+    <state x="1510" y="375" key="#com.intellij.ide.util.MemberChooser" timestamp="1584592919374">
+      <screen x="0" y="0" width="3840" height="2160" />
+    </state>
+    <state x="755" y="180" key="#com.intellij.ide.util.MemberChooser/0.0.1920.1037@0.0.1920.1037" timestamp="1584190261636" />
+    <state x="1510" y="375" key="#com.intellij.ide.util.MemberChooser/0.0.3840.2160@0.0.3840.2160" timestamp="1584592919374" />
+    <state x="497" y="60" key="CommitChangelistDialog2" timestamp="1584717216732">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state x="497" y="57" key="CommitChangelistDialog2/0.0.1920.1037@0.0.1920.1037" timestamp="1584551206614" />
+    <state x="497" y="60" key="CommitChangelistDialog2/0.0.1920.1080@0.0.1920.1080" timestamp="1584717216732" />
+    <state x="994" y="119" key="CommitChangelistDialog2/0.0.3840.2160@0.0.3840.2160" timestamp="1584597912117" />
+    <state x="808" y="250" key="Github.ShareDialog" timestamp="1584200932951">
+      <screen x="0" y="0" width="1920" height="1037" />
+    </state>
+    <state x="808" y="250" key="Github.ShareDialog/0.0.1920.1037@0.0.1920.1037" timestamp="1584200932951" />
+    <state width="1436" height="434" key="GridCell.Tab.0.bottom" timestamp="1584781119476">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1436" height="350" key="GridCell.Tab.0.bottom/0.0.1920.1037@0.0.1920.1037" timestamp="1584551110794" />
+    <state width="1436" height="434" key="GridCell.Tab.0.bottom/0.0.1920.1080@0.0.1920.1080" timestamp="1584781119476" />
+    <state width="1940" height="717" key="GridCell.Tab.0.bottom/0.0.3840.2160@0.0.3840.2160" timestamp="1584597280736" />
+    <state width="1436" height="434" key="GridCell.Tab.0.center" timestamp="1584781119476">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1436" height="350" key="GridCell.Tab.0.center/0.0.1920.1037@0.0.1920.1037" timestamp="1584551110794" />
+    <state width="1436" height="434" key="GridCell.Tab.0.center/0.0.1920.1080@0.0.1920.1080" timestamp="1584781119476" />
+    <state width="1940" height="717" key="GridCell.Tab.0.center/0.0.3840.2160@0.0.3840.2160" timestamp="1584597280736" />
+    <state width="1436" height="434" key="GridCell.Tab.0.left" timestamp="1584781119476">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1436" height="350" key="GridCell.Tab.0.left/0.0.1920.1037@0.0.1920.1037" timestamp="1584551110794" />
+    <state width="1436" height="434" key="GridCell.Tab.0.left/0.0.1920.1080@0.0.1920.1080" timestamp="1584781119476" />
+    <state width="1940" height="717" key="GridCell.Tab.0.left/0.0.3840.2160@0.0.3840.2160" timestamp="1584597280735" />
+    <state width="1436" height="434" key="GridCell.Tab.0.right" timestamp="1584781119476">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1436" height="350" key="GridCell.Tab.0.right/0.0.1920.1037@0.0.1920.1037" timestamp="1584551110794" />
+    <state width="1436" height="434" key="GridCell.Tab.0.right/0.0.1920.1080@0.0.1920.1080" timestamp="1584781119476" />
+    <state width="1940" height="717" key="GridCell.Tab.0.right/0.0.3840.2160@0.0.3840.2160" timestamp="1584597280736" />
+    <state x="0" y="0" key="SettingsEditor" timestamp="1584667776286">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state x="-2" y="-25" key="SettingsEditor/0.0.1920.1037@0.0.1920.1037" timestamp="1584549149200" />
+    <state x="0" y="0" key="SettingsEditor/0.0.1920.1080@0.0.1920.1080" timestamp="1584667776286" />
+    <state x="906" y="724" key="SettingsEditor/0.0.3840.2160@0.0.3840.2160" timestamp="1584580129297" />
+    <state width="498" height="447" key="SwitcherDM" timestamp="1584278294134">
+      <screen x="0" y="0" width="1920" height="1037" />
+    </state>
+    <state width="498" height="447" key="SwitcherDM/0.0.1920.1037@0.0.1920.1037" timestamp="1584278294134" />
+    <state x="540" y="31" key="Vcs.Push.Dialog.v2" timestamp="1584681313225">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state x="540" y="30" key="Vcs.Push.Dialog.v2/0.0.1920.1037@0.0.1920.1037" timestamp="1584551208179" />
+    <state x="540" y="31" key="Vcs.Push.Dialog.v2/0.0.1920.1080@0.0.1920.1080" timestamp="1584681313225" />
+    <state x="1080" y="62" key="Vcs.Push.Dialog.v2/0.0.3840.2160@0.0.3840.2160" timestamp="1584597919539" />
+    <state x="249" y="0" key="com.intellij.ide.util.TipDialog" timestamp="1584719368164">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state x="247" y="-25" key="com.intellij.ide.util.TipDialog/0.0.1920.1037@0.0.1920.1037" timestamp="1584549123005" />
+    <state x="249" y="0" key="com.intellij.ide.util.TipDialog/0.0.1920.1080@0.0.1920.1080" timestamp="1584719368164" />
+    <state x="498" y="0" key="com.intellij.ide.util.TipDialog/0.0.3840.2160@0.0.3840.2160" timestamp="1584632439255" />
+    <state x="578" y="232" width="936" height="589" key="find.popup" timestamp="1584780977723">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state x="578" y="223" width="937" height="566" key="find.popup/0.0.1920.1037@0.0.1920.1037" timestamp="1584379048358" />
+    <state x="578" y="232" width="936" height="589" key="find.popup/0.0.1920.1080@0.0.1920.1080" timestamp="1584780977723" />
+    <state x="623" y="207" width="672" height="678" key="search.everywhere.popup" timestamp="1584423291213">
+      <screen x="0" y="0" width="1920" height="1037" />
+    </state>
+    <state x="623" y="207" width="672" height="678" key="search.everywhere.popup/0.0.1920.1037@0.0.1920.1037" timestamp="1584423291213" />
+  </component>
+</project>

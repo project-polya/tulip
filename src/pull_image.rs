@@ -10,15 +10,10 @@ use crate::settings::{Config, Status};
 
 pub fn handle_local(db: &DB, workdir: &Path) {
     let mut status = force_get_json::<Status>(db, "status");
-    if let Ok(meta) = std::fs::metadata(workdir.join("image/root.x86_64")) {
-        if meta.is_dir() {
-            info!("target image detected");
-            status.image = true;
-            db.put("status", serde_json::to_string(&status).exit_on_failure()).exit_on_failure();
-        } else {
-            error!("target path is not a directory");
-            std::process::exit(1);
-        }
+    if let Ok(meta) = std::fs::metadata(workdir.join("image/image.sfs")) {
+        info!("target image detected with size: {} ", meta.len());
+        status.image = true;
+        db.put("status", serde_json::to_string(&status).exit_on_failure()).exit_on_failure();
     } else {
         error!("cannot access target path");
         std::process::exit(1);
@@ -36,14 +31,15 @@ pub fn handle(force: bool, db: &DB, backend: &str, workdir: &Path) {
         error!("image existed, exiting...");
         std::process::exit(1);
     }
-    let request_url: Url = format!("{}/image.tar", server).parse().exit_on_failure();
+    let request_url: Url = format!("{}/image.sfs", server).parse().exit_on_failure();
     let auth = format!("Authorization: Bearer {}", uuid);
+    std::fs::create_dir_all(workdir.join("image")).exit_on_failure();
     match backend {
         "wget" => {
             std::process::Command::new("wget")
                 .arg("-N")
                 .arg("-P")
-                .arg("/tmp")
+                .arg(workdir.join("image"))
                 .arg(request_url.as_str())
                 .arg("--header")
                 .arg(auth)
@@ -57,11 +53,12 @@ pub fn handle(force: bool, db: &DB, backend: &str, workdir: &Path) {
         "aria2c" => {
             std::process::Command::new("aria2c")
                 .arg(request_url.as_str())
+                .arg("--auto-file-renaming=false")
                 .arg("--optimize-concurrent-downloads")
                 .arg("--dir")
-                .arg("/tmp")
+                .arg(workdir.join("image"))
                 .arg("-o")
-                .arg("image.tar")
+                .arg("image.sfs")
                 .arg("--header")
                 .arg(auth)
                 .spawn()
@@ -72,22 +69,6 @@ pub fn handle(force: bool, db: &DB, backend: &str, workdir: &Path) {
         }
         _ => unreachable!()
     }
-    std::fs::create_dir_all(workdir.join("image")).exit_on_failure();
-    let untar_path = std::fs::canonicalize(workdir.join("image")).exit_on_failure();
-    info!("untar image to {}", untar_path.display());
-    std::process::Command::new("sudo")
-        .arg("-k")
-        .arg("tar")
-        .arg("-C")
-        .arg(untar_path)
-        .arg("-xf")
-        .arg("/tmp/image.tar")
-        .spawn()
-        .map_err(|x| x.to_string())
-        .and_then(|mut x| x.wait().map_err(|x| x.to_string()))
-        .and_then(|x| if x.success() { Ok(()) } else { Err(String::from("untar failed")) })
-        .exit_on_failure();
-    std::fs::remove_file("/tmp/image.tar").exit_on_failure();
     handle_local(db, workdir);
     refresh_config(server.as_str(), uuid.as_str(), db);
 }

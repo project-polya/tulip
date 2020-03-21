@@ -7,17 +7,7 @@ use serde::export::fmt::Display;
 use serde::ser::Error;
 use serde_json::Value;
 
-/// By invoke `setup` the client will first drag the image.
-/// The image contains a `root.x86_64` together with other files.
-/// ```
-/// image.tar.lz4:
-///   - root.x86_64
-///   - otherfiles
-/// ```
-/// The image will then be untared into the `.local/tulip/image` direcotry.
-/// Then it will download a config file.
-///
-///
+
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct EnvPair {
     pub name: String,
