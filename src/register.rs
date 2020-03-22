@@ -35,9 +35,10 @@ pub fn handle(tulip_dir: &Path, server: &str, token: &str, db: &DB, force: bool)
     let config = argon2::Config::default();
     let hash = argon2::hash_encoded(token.as_bytes(), &seed, &config).exit_on_failure();
     let register = reqwest::blocking::Client::new()
-        .get(format!("{}/register", server).parse::<Url>().exit_on_failure())
+        .post(format!("{}/register", server).parse::<Url>().exit_on_failure())
         .bearer_auth(hash)
         .send()
+        .and_then(|x| x.error_for_status())
         .and_then(|res| res.json::<RegisterResult>())
         .exit_on_failure();
     db.put("uuid", register.token.as_bytes()).exit_on_failure();
