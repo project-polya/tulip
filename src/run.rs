@@ -11,7 +11,7 @@ use rocksdb::DB;
 use crate::{force_get_json, LogUnwrap};
 use crate::settings::{Config, Status};
 
-pub fn run(db: &DB, workdir: &Path, without_build: bool) {
+pub fn run(db: &DB, without_build: bool) {
     let config = force_get_json::<Config>(db, "config");
 
     let mut status = force_get_json::<Status>(db, "status");
@@ -39,10 +39,10 @@ pub fn run(db: &DB, workdir: &Path, without_build: bool) {
 
     let mut stdin = None;
     if let Some(path) = &config.stdin {
-        stdin.replace(std::fs::read_to_string(workdir.join("image").join(path)).exit_on_failure());
+        stdin.replace(std::fs::read_to_string(mount_point.join(path)).exit_on_failure());
     }
 
-    let mut command = build_firejail(mount_point, &config, true, workdir);
+    let mut command = build_firejail(mount_point, &config, true);
 
     if stdin.is_some() {
         command.stdin(Stdio::piped());
@@ -113,7 +113,7 @@ pub fn run(db: &DB, workdir: &Path, without_build: bool) {
     db.put("status", serde_json::to_vec(&status).exit_on_failure()).exit_on_failure();
 }
 
-pub fn build_firejail(mount_point: &Path, config: &Config, with_config: bool, workdir: &Path) -> Command {
+pub fn build_firejail(mount_point: &Path, config: &Config, with_config: bool) -> Command {
     let mut command = std::process::Command::new("firejail");
 
     command.arg("--quiet")
@@ -167,7 +167,7 @@ pub fn build_firejail(mount_point: &Path, config: &Config, with_config: bool, wo
         }
 
         if let Some(profile) = firejail.with_profile.as_ref() {
-            command.arg(format!("--profile={}", workdir.join(profile).display()));
+            command.arg(format!("--profile={}", mount_point.join(profile).display()));
         }
 
         if let Some(mac) = firejail.mac.as_ref() {

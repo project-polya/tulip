@@ -254,8 +254,8 @@ fn edit_script(editor: &str, build_or_run: bool, shellcheck: &Path, status: &Sta
             .map_err(|x| x.to_string())
             .and_then(|x| if x.success() { Ok(format!("exited with {}", x)) } else { Err(format!("failed with {}", x)) })
         {
-            Ok(t) => { info!("{}", t) },
-            Err(t) => { error!("{}", t) },
+            Ok(t) => { info!("{}", t) }
+            Err(t) => { error!("{}", t) }
         }
     }
 }

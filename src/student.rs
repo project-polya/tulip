@@ -369,7 +369,7 @@ pub fn auto_current(workdir: &Path, db: &DB, nutshell: &Path, tmp_size: Option<u
         std::io::stdout().flush().exit_on_failure();
         std::io::stdin().read_line(&mut result).exit_on_failure();
         if "y" == result.trim().to_ascii_lowercase() {
-            crate::run::run(db, workdir, false);
+            crate::run::run(db, false);
         }
     }
 
@@ -380,7 +380,7 @@ pub fn auto_current(workdir: &Path, db: &DB, nutshell: &Path, tmp_size: Option<u
         std::io::stdin().read_line(&mut result).exit_on_failure();
         if "y" == result.trim().to_ascii_lowercase() {
             let config = force_get_json(db, "config");
-            let code = crate::run::build_firejail(mount_point, &config, true, workdir)
+            let code = crate::run::build_firejail(mount_point, &config, true)
                 .spawn()
                 .exit_on_failure()
                 .wait()

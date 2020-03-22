@@ -6,19 +6,19 @@ use structopt::*;
 pub enum StatusWatch {
     #[structopt(about = "Current project status")]
     Current {
-        #[structopt(long, short, about = "Show IO data")]
+        #[structopt(long, short, help = "Show IO data")]
         io_data: bool
     },
     #[structopt(about = "Global configuration")]
     Global,
     #[structopt(about = "Remote student lists")]
     Remote {
-        #[structopt(short, long, about = "Show student detail")]
+        #[structopt(short, long, help = "Show student detail")]
         detail: bool,
     },
     #[structopt(about = "Remote student info")]
     RemoteID {
-        #[structopt(long, short, about = "Remote student info")]
+        #[structopt(long, short, help = "Remote student info")]
         id: String
     },
     #[structopt(about = "Edit current project status")]
@@ -49,7 +49,7 @@ pub enum StatusWatch {
     Uuid,
     #[structopt(about = "check current server")]
     Server {
-        #[structopt(short, long, about = "edit server")]
+        #[structopt(short, long, help = "edit server")]
         change_to: Option<String>,
     },
 }
@@ -72,14 +72,14 @@ pub enum Sandbox {
 
 #[derive(StructOpt, Debug)]
 pub struct Opt {
-    #[structopt(short, long, about = "the log level", env = "TULIP_LOG_LEVEL", default_value = "info",
+    #[structopt(short, long, help = "the log level", env = "TULIP_LOG_LEVEL", default_value = "info",
     possible_values = & ["error", "trace", "info", "debug", "off", "warn"])]
     pub log_level: String,
-    #[structopt(short, long, about = "The work directory of tulip", env = "TULIP_DIR", default_value = ".tulip")]
+    #[structopt(short, long, help = "The work directory of tulip", env = "TULIP_DIR", default_value = ".tulip")]
     pub tulip_dir: PathBuf,
     #[structopt(subcommand)]
     pub command: SubCommand,
-    #[structopt(short, long, about = "Path to nutshell binary", env = "NUTSHELL_BIN", default_value = "nutshell")]
+    #[structopt(short, long, help = "Path to nutshell binary", env = "NUTSHELL_BIN", default_value = "nutshell")]
     pub nutshell: PathBuf,
 }
 
@@ -87,9 +87,9 @@ pub struct Opt {
 pub enum SubCommand {
     #[structopt(about = "Register this client")]
     Register {
-        #[structopt(short, long, about = "Rhe server address", env = "TULIP_SERVER")]
+        #[structopt(short, long, help = "The server address", env = "TULIP_SERVER")]
         server: String,
-        #[structopt(short, long, about = "Ssh username", env = "TULIP_TOKEN")]
+        #[structopt(short, long, help = "Ssh username", env = "TULIP_TOKEN")]
         token: String,
         #[structopt(long, help = "Force to register a new uuid")]
         force: bool,
@@ -124,9 +124,9 @@ pub enum SubCommand {
         print_result: bool,
         #[structopt(short, long, help = "Enter a shell of systemd-nspawn after initialization")]
         shell: bool,
-        #[structopt(short, long, about = "The diretory to mount the root", default_value = "/mnt")]
+        #[structopt(short, long, env = "TULIP_MOUNT_DIR", help = "The diretory to mount the root", default_value = "/mnt")]
         mount_dir: PathBuf,
-        #[structopt(short, long, about = "When specified, a new tmpfs with the given size will mount in the root")]
+        #[structopt(short, long, help = "When specified, a new tmpfs with the given size will mount in the root")]
         tmp_size: Option<usize>,
         #[structopt(long, help = "Force to mount overlay even if there is a record in the database. this can be useful if you want to recover the progress after reboot")]
         force: bool,
@@ -137,7 +137,7 @@ pub enum SubCommand {
     Grade {
         #[structopt(short, long, help = "The score")]
         score: usize,
-        #[structopt(long, about = "Allow override existing score")]
+        #[structopt(long, help = "Allow override existing score")]
         r#override: bool,
     },
     #[structopt(about = "Open the comment editor")]
@@ -149,7 +149,7 @@ pub enum SubCommand {
     Fetch {
         #[structopt(short, long, help = "backend downloader", default_value = "wget", possible_values = & ["wget", "aria2c"])]
         backend: String,
-        #[structopt(short, long, about = "Do not request next task, only sync current project")]
+        #[structopt(short, long, help = "Do not request next task, only sync current project")]
         download_only: bool,
         #[structopt(short, long, help = "Shellcheck path", env = "SHELL_CHECK_BIN", default_value = "shellcheck")]
         shellcheck: PathBuf,
@@ -158,16 +158,16 @@ pub enum SubCommand {
     Pull {
         #[structopt(short, long, help = "backend downloader", default_value = "wget", possible_values = & ["wget", "aria2c"])]
         backend: String,
-        #[structopt(short, long, about = "Student ID")]
+        #[structopt(short, long, help = "Student ID")]
         id: String,
         #[structopt(short, long, help = "Shellcheck path", env = "SHELL_CHECK_BIN", default_value = "shellcheck")]
         shellcheck: PathBuf,
     },
     #[structopt(about = "Auto run the current project")]
     AutoCurrent {
-        #[structopt(short, long, about = "When specified, a new tmpfs with the given size will mount in the root")]
+        #[structopt(short, long, help = "When specified, a new tmpfs with the given size will mount in the root")]
         tmp_size: Option<usize>,
-        #[structopt(short, long, about = "The diretory to mount the root", default_value = "/mnt")]
+        #[structopt(short, long, help = "The diretory to mount the root", default_value = "/mnt")]
         mount_point: PathBuf,
         #[structopt(short, long, help = "Shellcheck path", env = "SHELL_CHECK_BIN", default_value = "shellcheck")]
         shellcheck: PathBuf,
@@ -178,19 +178,19 @@ pub enum SubCommand {
     },
     #[structopt(about = "Build the current project")]
     Build {
-        #[structopt(long, about = "Rebuild the project")]
+        #[structopt(long, help = "Rebuild the project")]
         rebuild: bool
     },
 
     #[structopt(about = "Build the current project")]
     Run {
-        #[structopt(long, about = "Force to run without build")]
+        #[structopt(long, help = "Force to run without build")]
         without_build: bool
     },
 
     #[structopt(about = "Edit current global settings")]
     Submit {
-        #[structopt(long, about = "Allow overriding existing submission")]
+        #[structopt(long, help = "Allow overriding existing submission")]
         r#override: bool
     },
     #[structopt(about = "Clear the current project")]
@@ -202,13 +202,13 @@ pub enum SubCommand {
     },
     #[structopt(about = "Mark the current project")]
     Mark {
-        #[structopt(short, long, about = "Remove the mark")]
+        #[structopt(short, long, help = "Remove the mark")]
         remove: bool,
     },
 
     #[structopt(about = "Skip the current project")]
     Skip {
-        #[structopt(long, about = "Force skipping even without a proper response from the server")]
+        #[structopt(long, help = "Force skipping even without a proper response from the server")]
         force: bool,
     },
     #[structopt(about = "Read the report")]

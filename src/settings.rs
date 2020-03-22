@@ -21,7 +21,6 @@ pub struct Syscall {
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Limit {
     pub mem_limit: Option<usize>,
-    // in MiB
     pub nofile_limit: Option<usize>,
     pub filesize_limit: Option<usize>,
     pub process_limit: Option<usize>,
@@ -92,7 +91,7 @@ pub struct FirejailConfig {
     pub has_x: bool,
     pub env: Vec<EnvPair>,
     pub env_remove: Vec<String>,
-    pub whilelist: Vec<PathBuf>
+    pub whilelist: Vec<PathBuf>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]
@@ -101,7 +100,7 @@ pub struct Config {
     pub firejail: FirejailConfig,
     pub notification: String,
     pub max_grade: usize,
-    pub stdin: Option<PathBuf>
+    pub stdin: Option<PathBuf>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
@@ -110,7 +109,7 @@ pub struct StudentConfig {
     pub build_shell: PathBuf,
     pub run_shell: PathBuf,
     pub notification: String,
-    pub report: Option<PathBuf>
+    pub report: Option<PathBuf>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]
@@ -157,7 +156,7 @@ pub fn to_table<'de, T: Serialize>(s: &T) -> Result<Table, Box<impl Error>> {
                         table.add_row(row![bFy->x, bFb->y.to_table_item()]);
                     }
                     Ok(table)
-                },
+                }
                 _ => Err(
                     Box::new(Error::custom("to table can only be used to struct"))
                 )

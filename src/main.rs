@@ -214,7 +214,7 @@ fn main() {
         }
         SubCommand::Run { without_build } => {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
-            run::run(&db, opt.tulip_dir.as_path(), without_build);
+            run::run(&db, without_build);
         }
         SubCommand::Submit { r#override } => {
             let db = init_db(opt.tulip_dir.join("meta").as_path());
@@ -240,7 +240,7 @@ fn main() {
                         std::process::exit(1);
                     });
                     run::build_firejail(mount_point.as_path(),
-                                        &config, !without_config, opt.tulip_dir.as_path())
+                                        &config, !without_config)
                 }
                 Sandbox::SystemdNspawn { rsync, without_config } => {
                     if status.mount.is_none() {

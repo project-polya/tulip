@@ -1450,10 +1450,8 @@ checksum = "e604eb7b43c06650e854be16a2a03155743d3752dd1c943f6829e26b7a36e382"
 name = "tulip"
 version = "0.1.0"
 dependencies = [
- "hashbrown",
  "log",
  "mimalloc",
- "num-traits",
  "pretty_env_logger",
  "prettytable-rs",
  "reqwest",
