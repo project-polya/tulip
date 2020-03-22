@@ -6,6 +6,45 @@ Tulip is a part of [Project Polya](https://github.com/project-polya).
 
 It is the endpoint program, which is responsible for creating the judge environment and running the student project.
 
+```text
+tulip 0.1.0
+
+USAGE:
+    tulip [OPTIONS] <SUBCOMMAND>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+    -l, --log-level <log-level>    The log level [env: TULIP_LOG_LEVEL=]  [default: info]  [possible values: error,
+                                   trace, info, debug, off, warn]
+    -n, --nutshell <nutshell>      Path to nutshell binary [env: NUTSHELL_BIN=]  [default: nutshell]
+    -t, --tulip-dir <tulip-dir>    The work directory of tulip [env: TULIP_DIR=]  [default: .tulip]
+
+SUBCOMMANDS:
+    auto-current       Auto run the current project
+    build              Build the current project
+    clean-all          Unregister the client and clean up local environment
+    clear              Clear the current project
+    comment            Open the comment editor
+    destroy-overlay    Delete the current overlay system
+    enter-sandbox      Manually enter the sandbox
+    fetch              Fetch student project
+    grade              Give a grade to the student
+    help               Prints this message or the help of the given subcommand(s)
+    init-overlay       Initialize the overlay filesystem
+    mark               Mark the current project
+    pull               Pull the target student project
+    pull-image         Pull the base image
+    refresh-config     Refresh the global config
+    register           Register this client
+    report             Read the report
+    run                Build the current project
+    skip               Skip the current project
+    status             See the current status
+    submit             Edit current global settings
+```
 ## Requirements for Use
 
 - `Linux` is required.

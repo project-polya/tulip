@@ -72,7 +72,7 @@ pub enum Sandbox {
 
 #[derive(StructOpt, Debug)]
 pub struct Opt {
-    #[structopt(short, long, help = "the log level", env = "TULIP_LOG_LEVEL", default_value = "info",
+    #[structopt(short, long, help = "The log level", env = "TULIP_LOG_LEVEL", default_value = "info",
     possible_values = & ["error", "trace", "info", "debug", "off", "warn"])]
     pub log_level: String,
     #[structopt(short, long, help = "The work directory of tulip", env = "TULIP_DIR", default_value = ".tulip")]
