@@ -220,6 +220,28 @@ pub fn handle(db: &DB, command: StatusWatch, workdir: &Path) {
             let ans = force_get_json::<Status>(db, "status");
             edit_script(editor.as_str(), false, shellcheck.as_path(), &ans, workdir);
         }
+        StatusWatch::ResetSkip { id  } => {
+            let server = force_get(db, "server");
+            let uuid = force_get(db, "uuid");
+            reqwest::blocking::Client::new()
+                .delete(format!("{}/student/{}/skip", server, id).parse::<Url>().exit_on_failure())
+                .bearer_auth(uuid)
+                .send()
+                .and_then(|x|x.error_for_status())
+                .exit_on_failure();
+            info!("target student skipping status reset successfully");
+        }
+        StatusWatch::ResetGrade { id } => {
+            let server = force_get(db, "server");
+            let uuid = force_get(db, "uuid");
+            reqwest::blocking::Client::new()
+                .delete(format!("{}/student/{}/grades", server, id).parse::<Url>().exit_on_failure())
+                .bearer_auth(uuid)
+                .send()
+                .and_then(|x|x.error_for_status())
+                .exit_on_failure();
+            info!("target student grading status reset successfully");
+        }
     }
 }
 

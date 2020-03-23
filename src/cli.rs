@@ -18,7 +18,17 @@ pub enum StatusWatch {
     },
     #[structopt(about = "Remote student info")]
     RemoteID {
-        #[structopt(long, short, help = "Remote student info")]
+        #[structopt(long, short, help = "Remote student id")]
+        id: String
+    },
+    #[structopt(about = "Reset student skipping status")]
+    ResetSkip {
+        #[structopt(long, short, help = "Remote student id")]
+        id: String
+    },
+    #[structopt(about = "Reset student grading status")]
+    ResetGrade {
+        #[structopt(long, short, help = "Remote student id")]
         id: String
     },
     #[structopt(about = "Edit current project status")]
